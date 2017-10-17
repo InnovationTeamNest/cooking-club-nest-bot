@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from telegram import Bot  # Which one to choose?
 
 import secrets

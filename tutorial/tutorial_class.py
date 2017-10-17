@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 class TestClass:
     def __init__(self, name, number, private):
         self.name = name

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import argparse
 import httplib2
 import os
