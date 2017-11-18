@@ -2,6 +2,7 @@
 
 from oauth2client.client import GoogleCredentials
 from apiclient import discovery
+import datetime
 import httplib2
 import secrets
 
@@ -21,6 +22,13 @@ def get_google_calendar_service():
 
 def get_today_assigned_people():
     calendar_service = get_google_calendar_service()
-    # TODO use calendar_service to perform API calls to Google Calendar
+    now = datetime.datetime.utcnow()
+    endday = now.replace(hour=21, minute=0, second=0)
+    now = now.isoformat() + "+01:00"
+    endday = endday.isoformat() + "+01:00"
+    eventResult = calendar_service.events().list(calendarId='primary', timeMax=endday, timeMin=now,
+                                                 maxResults=1, singleEvents=True,
+                                                 orderBy='startTime').execute()
+    events = eventResult.get('items')
 
-    return "Tizio e Caio"
+    return str(events[0].get("summary"))
