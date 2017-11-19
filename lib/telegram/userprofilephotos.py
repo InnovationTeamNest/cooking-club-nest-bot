@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # A library that provides a Python interface to the Telegram Bot API
-# Copyright (C) 2015-2016
+# Copyright (C) 2015-2017
 # Leandro Toledo de Souza <devs@python-telegram-bot.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,50 +16,42 @@
 #
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
-"""This module contains a object that represents a Telegram
-UserProfilePhotos."""
+"""This module contains an object that represents a Telegram UserProfilePhotos."""
 
 from telegram import PhotoSize, TelegramObject
 
 
 class UserProfilePhotos(TelegramObject):
-    """This object represents a Telegram UserProfilePhotos.
+    """This object represent a user's profile pictures.
 
     Attributes:
-        total_count (int):
-        photos (List[List[:class:`telegram.PhotoSize`]]):
+        total_count (:obj:`int`): Total number of profile pictures.
+        photos (List[List[:class:`telegram.PhotoSize`]]): Requested profile pictures.
 
     Args:
-        total_count (int):
-        photos (List[List[:class:`telegram.PhotoSize`]]):
+        total_count (:obj:`int`): Total number of profile pictures the target user has.
+        photos (List[List[:class:`telegram.PhotoSize`]]): Requested profile pictures (in up to 4
+            sizes each).
+
     """
 
-    def __init__(self, total_count, photos):
+    def __init__(self, total_count, photos, **kwargs):
         # Required
         self.total_count = int(total_count)
         self.photos = photos
 
-    @staticmethod
-    def de_json(data):
-        """
-        Args:
-            data (str):
-
-        Returns:
-            telegram.UserProfilePhotos:
-        """
+    @classmethod
+    def de_json(cls, data, bot):
         if not data:
             return None
 
-        data['photos'] = [PhotoSize.de_list(photo) for photo in data['photos']]
+        data = super(UserProfilePhotos, cls).de_json(data, bot)
 
-        return UserProfilePhotos(**data)
+        data['photos'] = [PhotoSize.de_list(photo, bot) for photo in data['photos']]
+
+        return cls(**data)
 
     def to_dict(self):
-        """
-        Returns:
-            dict:
-        """
         data = super(UserProfilePhotos, self).to_dict()
 
         data['photos'] = []

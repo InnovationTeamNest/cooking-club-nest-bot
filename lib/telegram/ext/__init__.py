@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # A library that provides a Python interface to the Telegram Bot API
-# Copyright (C) 2015-2016
+# Copyright (C) 2015-2017
 # Leandro Toledo de Souza <devs@python-telegram-bot.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,21 +18,29 @@
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 """Extensions over the Telegram Bot API to facilitate bot making"""
 
-from .dispatcher import Dispatcher
-from .jobqueue import JobQueue
+from .dispatcher import Dispatcher, DispatcherHandlerStop, run_async
+from .jobqueue import JobQueue, Job
 from .updater import Updater
 from .callbackqueryhandler import CallbackQueryHandler
 from .choseninlineresulthandler import ChosenInlineResultHandler
 from .commandhandler import CommandHandler
 from .handler import Handler
 from .inlinequeryhandler import InlineQueryHandler
-from .messagehandler import MessageHandler, Filters
+from .messagehandler import MessageHandler
+from .filters import BaseFilter, Filters
 from .regexhandler import RegexHandler
 from .stringcommandhandler import StringCommandHandler
 from .stringregexhandler import StringRegexHandler
 from .typehandler import TypeHandler
+from .conversationhandler import ConversationHandler
+from .precheckoutqueryhandler import PreCheckoutQueryHandler
+from .shippingqueryhandler import ShippingQueryHandler
+from .messagequeue import MessageQueue
+from .messagequeue import DelayQueue
 
-__all__ = ('Dispatcher', 'JobQueue', 'Updater', 'CallbackQueryHandler',
+__all__ = ('Dispatcher', 'JobQueue', 'Job', 'Updater', 'CallbackQueryHandler',
            'ChosenInlineResultHandler', 'CommandHandler', 'Handler', 'InlineQueryHandler',
-           'MessageHandler', 'Filters', 'RegexHandler', 'StringCommandHandler',
-           'StringRegexHandler', 'TypeHandler')
+           'MessageHandler', 'BaseFilter', 'Filters', 'RegexHandler', 'StringCommandHandler',
+           'StringRegexHandler', 'TypeHandler', 'ConversationHandler',
+           'PreCheckoutQueryHandler', 'ShippingQueryHandler', 'MessageQueue', 'DelayQueue',
+           'DispatcherHandlerStop', 'run_async')

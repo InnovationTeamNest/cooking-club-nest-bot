@@ -70,7 +70,8 @@ def send_notification(date, assigned_group, counter=0):
 
             message = "Salve! Oggi il turno di pulizie è di " + \
                       ", ".join(people) + ".\n\nBuona fortuna!"
-            ccn_bot.sendMessage(group_chat_id, message)
+            sent_message = ccn_bot.sendMessage(group_chat_id, message)
+            ccn_bot.pinChatMessage(group_chat_id, sent_message.message_id)
         # the date can be considered processed in any case
         CheckedDay(id=date, day=date, people=assigned_group).put()
     except Exception as ex:
