@@ -1,4 +1,4 @@
 cron:
 - description: check daily turn from Google Calendar
   url: /turn
-  schedule: every day 10:00
+  schedule: every 5 minutes from 13:00 to 21:00
