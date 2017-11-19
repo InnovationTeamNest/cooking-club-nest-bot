@@ -8,8 +8,12 @@ import telegram
 from google_calendar import get_today_assigned_people
 from secrets import ccn_bot_token, group_chat_id
 
+import groups
 
-def check_turn():
+MAX_ATTEMPTS = 5
+
+
+def check_turn(counter=0):
     today = time.strftime("%d/%m/%Y")
 
     try:
@@ -19,7 +23,7 @@ def check_turn():
             return
     except Exception as ex:
         log.error("Unable to fetch data from Datastore... No notification "
-                  "for today... What a pity!")  # TODO IMPROVE (retry)
+                  "for today... What a pity!")
         log.error(ex.message)
         return
 
@@ -27,13 +31,21 @@ def check_turn():
              str(time.strftime("%c")))
 
     try:
-        assigned_people = get_today_assigned_people()
-        log.info("Today's turn: " + assigned_people)
-        send_notification(today, assigned_people)
+        assigned_group = get_today_assigned_people()
     except Exception as ex:
         log.error("Unable to fetch data from Google Calendar... "
-                  "No notification for today... What a pity!")  # TODO IMPROVE (retry)
+                  "No notification for today... What a pity!")
+        if counter < MAX_ATTEMPTS:
+            time.sleep(2**counter)
+            check_turn(counter + 1)
         log.error(ex.message)
+        return
+    try:
+        log.info("Today's turn: " + assigned_group)
+        send_notification(today, assigned_group)
+    except Exception as ex:
+        log.error("Unable to fetch data from Google Calendar... "
+                  "No notification for today... What a pity!")
 
 
 # this Datastore class is required to keep track of processed days
@@ -48,24 +60,27 @@ def day_already_checked(date):
         return ndb.Key('CheckedDay', date).get()
 
 
-def send_notification(date, assigned_people):
+def send_notification(date, assigned_group, counter=0):
     try:
         # there could be days with no turn. It is useless to send a message to
         # the group in this case.
-        if assigned_people:
+        if assigned_group:
+            people = groups.groups[assigned_group]
             ccn_bot = telegram.Bot(ccn_bot_token)
             # TODO Improve and add Easter egg...
 
             message = "Salve! Oggi il turno di pulizie è di " + \
-                      str(assigned_people) + "\n\nBuona fortuna!"
+                      ", ".join(people) + "\n\nBuona fortuna!"
             ccn_bot.sendMessage(group_chat_id, message)
         # the date can be considered processed in any case
-        CheckedDay(id=date, day=date, people=assigned_people).put()
+        CheckedDay(id=date, day=date, people=assigned_group).put()
     except Exception as ex:
         log.error("Unable to send Telegram notification. No notification for "
-                  "today... What a pity!")  # TODO IMPROVE (retry)
+                  "today... What a pity!")
         log.error(ex.message)
-
+        if counter < MAX_ATTEMPTS:
+            time.sleep(2**counter)
+            send_notification(date, assigned_group, counter + 1)
 
 def main():
     pass
