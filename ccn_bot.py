@@ -68,7 +68,7 @@ def send_notification(date, assigned_group, counter=0):
             ccn_bot = telegram.Bot(ccn_bot_token)
             # TODO Improve and add Easter egg...
 
-            if assigned_group < 100:
+            if (int(assigned_group) < 100):
                 message = "Salve! Oggi il turno di pulizie è di " + \
                       ", ".join(people) + ".\n\nBuona fortuna!"
             else:
