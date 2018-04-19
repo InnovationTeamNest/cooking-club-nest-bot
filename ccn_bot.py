@@ -8,9 +8,7 @@ import telegram
 from google_calendar import get_today_assigned_people
 from secrets import ccn_bot_token, group_chat_id, groups
 
-
 MAX_ATTEMPTS = 5
-
 
 def check_turn(counter=0):
     today = time.strftime("%d/%m/%Y")
@@ -45,6 +43,7 @@ def check_turn(counter=0):
     except Exception as ex:
         log.error("Unable to fetch data from Google Calendar... "
                   "No notification for today... What a pity!")
+        log.error(ex.message)
 
 
 # this Datastore class is required to keep track of processed days
@@ -69,7 +68,7 @@ def send_notification(date, assigned_group, counter=0):
             # TODO Improve and add Easter egg...
 
             if (int(assigned_group) < 100):
-                message = "Salve! Oggi il turno di pulizie è del gruppo + " + assigned_group + ", composto da " + \
+                message = "Salve! Oggi il turno di pulizie è del gruppo " + assigned_group + ", composto da " + \
                       ", ".join(people) + ".\n\nBuona fortuna!"
             else:
                 message = "Salve! Oggi dovranno scontare il proprio richiamo " + \
