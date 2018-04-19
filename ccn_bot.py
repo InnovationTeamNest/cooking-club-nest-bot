@@ -69,7 +69,7 @@ def send_notification(date, assigned_group, counter=0):
             # TODO Improve and add Easter egg...
 
             if (int(assigned_group) < 100):
-                message = "Salve! Oggi il turno di pulizie è di " + \
+                message = "Salve! Oggi il turno di pulizie è del gruppo + " + assigned_group + ", composto da " + \
                       ", ".join(people) + ".\n\nBuona fortuna!"
             else:
                 message = "Salve! Oggi dovranno scontare il proprio richiamo " + \
