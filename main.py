@@ -2,7 +2,9 @@
 
 import webapp2
 import ccn_bot
+from webhook import WebHookHandler, WebHookSetter
 from timeit import default_timer as timer
+
 
 
 class MainHandler(webapp2.RequestHandler):
@@ -18,17 +20,9 @@ class TurnHandler(webapp2.RequestHandler):
                             str((timer() - start_time)) + " seconds.")
 
 
-class WebHookHandler(webapp2.RequestHandler):
-    def set_webhook(self):
-        ccn_bot.setwebhook(self)
-
-    def webhook_handler(self):
-        ccn_bot.webhook_handler(self)
-
-
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
     ('/turn', TurnHandler),
-    ('/setwebhook', WebHookHandler.set_webhook()),
-    ('/' + ccn_bot.ccn_bot_token, WebHookHandler.webhook_handler())
+    ('/setwebhook', WebHookSetter),
+    ('/' + ccn_bot.ccn_bot_token, WebHookHandler)
 ], debug=True)

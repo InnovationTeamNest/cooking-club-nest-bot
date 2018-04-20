@@ -4,11 +4,9 @@ import google.appengine.ext.ndb as ndb
 import logging as log
 import time
 import telegram
-import json
 
 from google_calendar import get_today_assigned_people
-from secrets import ccn_bot_token, group_chat_id, groups, url
-from telegram.ext import Dispatcher, CommandHandler, MessageHandler, Filters
+from secrets import ccn_bot_token, group_chat_id, groups
 
 MAX_ATTEMPTS = 5
 
@@ -86,79 +84,6 @@ def send_notification(date, assigned_group, counter=0):
         if counter < MAX_ATTEMPTS:
             time.sleep(2**counter)
             send_notification(date, assigned_group, counter + 1)
-
-def dispatcherSetup():
-    dispatcher = Dispatcher(bot=telegram.Bot(ccn_bot_token), update_queue=None, workers=0)
-
-    dispatcher.add_handler(CommandHandler('start', start))
-    dispatcher.add_handler(CommandHandler('oggi', today_turn))
-    dispatcher.add_handler(CommandHandler("gruppo", get_group, pass_args=True))
-    dispatcher.add_handler(CommandHandler("help", help))
-    dispatcher.add_handler(MessageHandler(Filters.text, echo))
-
-    return dispatcher
-
-
-def start(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text="Ciao! Questo è il bot del Cooking Corner del Nest"
-                     + ". Per iniziare scrivi un comando o scrivi /help per aiuto.")
-
-def help(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text="/oggi - Mostra il turno di oggi")
-    bot.send_message(chat_id=update.message.chat_id, text="/gruppo NUMEROGRUPPO - Mostra i membri di un certo gruppo")
-
-
-def today_turn(bot, update):
-    assigned_group = get_today_assigned_people()
-    try:
-        #try:
-        #assigned_group = TEMP #get_today_assigned_people()
-        #except Exception as ex:
-        #    log.error("Fetch data error!\n" + ex.message)
-
-        if assigned_group:
-            people = groups[assigned_group]
-            message = "Oggi il turno è del gruppo " + assigned_group + ", composto da " + \
-                      ", ".join(people)
-            bot.sendMessage(update.message.chat_id, message)
-    except Exception as ex:
-        log.error("Unable to send Telegram message!\n" + ex.message)
-        bot.sendMessage(update.message.chat_id, "Mi dispiace, in questo momento non riesco a ottenere i turni di oggi.")
-
-
-def get_group(bot, update, args):
-    args = args[0]
-    try:
-        people = groups[str(args)]
-        message = "Il gruppo " + str(args) + " è formato da " + \
-                  ", ".join(people) + "."
-        bot.sendMessage(update.message.chat_id, message)
-    except Exception as ex:
-        bot.sendMessage(update.message.chat_id,
-                        "Non ho capito bene il numero del gruppo. I gruppi possibili vanno da 1 a 40.")
-        log.error(ex.message)
-
-def echo(bot, update):
-    bot.sendMessage(update.message.chat_id, "Mi dispiace, posso solo risponderti se usi uno dei comandi in /help.")
-
-def setwebhook(self):
-        dispatcherSetup()
-        s = telegram.Bot(ccn_bot_token).setWebhook(url + '/' + ccn_bot_token)
-        if s:
-            self.response.write("Webhook setted")
-        else:
-            self.response.write("Webhook setup failed")
-
-def webhook_handler(self):
-    # Retrieve the message in JSON and then transform it to Telegram object
-    body = json.loads(self.request.body)
-    update = telegram.Update.de_json(body)
-    webhook(update)
-
-
-def webhook(update):
-    global dispatcher
-    dispatcher.process_update(update)
 
 
 def main():
