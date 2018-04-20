@@ -17,13 +17,12 @@ class TurnHandler(webapp2.RequestHandler):
         self.response.write("Request completed in " +
                             str((timer() - start_time)) + " seconds.")
 
-def main():
-    ccn_bot.messageHandler()
+class UserHandler(webapp2.RequestHandler):
+    def get(self):
+        ccn_bot.messageHandler()
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
-    ('/turn', TurnHandler)
+    ('/turn', TurnHandler),
+    ('/activateusermode', UserHandler)
 ], debug=True)
-
-if __name__ == '__main__':
-    main()
