@@ -32,3 +32,16 @@ def get_today_assigned_people():
     events = eventResult.get('items')
 
     return str(events[0].get("summary"))
+
+def get_tomorrow_assigned_people():
+    calendar_service = get_google_calendar_service()
+    now = datetime.datetime.utcnow()
+    endday = now.replace(hour=21, minute=0, second=0)
+    now = now.isoformat() + "+25:00"
+    endday = endday.isoformat() + "+25:00"
+    eventResult = calendar_service.events().list(calendarId='primary', timeMax=endday, timeMin=now,
+                                                 maxResults=1, singleEvents=True,
+                                                 orderBy='startTime').execute()
+    events = eventResult.get('items')
+
+    return str(events[0].get("summary"))

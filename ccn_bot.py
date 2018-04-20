@@ -7,6 +7,7 @@ import telegram
 
 from google_calendar import get_today_assigned_people
 from secrets import ccn_bot_token, group_chat_id, groups
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 MAX_ATTEMPTS = 5
 
@@ -84,6 +85,67 @@ def send_notification(date, assigned_group, counter=0):
         if counter < MAX_ATTEMPTS:
             time.sleep(2**counter)
             send_notification(date, assigned_group, counter + 1)
+
+def messageHandler():
+    updater = Updater(token=ccn_bot_token)
+    dispatcher = updater.dispatcher
+
+    start_handler = CommandHandler('start', start)
+    turn_handler = CommandHandler('oggi', today_turn)
+    group_handler = CommandHandler("gruppo", get_group, pass_args=True)
+    help_handler = CommandHandler("help", help)
+    echo_handler = MessageHandler(Filters.text, echo)
+
+    dispatcher.add_handler(start_handler)
+    dispatcher.add_handler(turn_handler)
+    dispatcher.add_handler(group_handler)
+    dispatcher.add_handler(help_handler)
+    dispatcher.add_handler(echo_handler)
+
+    updater.start_polling()
+
+def start(bot, update):
+    bot.send_message(chat_id=update.message.chat_id, text="Ciao! Questo è il bot del Cooking Corner del Nest"
+                     + ". Per iniziare scrivi un comando o scrivi /help per aiuto.")
+
+def help(bot, update):
+    bot.send_message(chat_id=update.message.chat_id, text="/oggi - Mostra il turno di oggi")
+    bot.send_message(chat_id=update.message.chat_id, text="/gruppo NUMEROGRUPPO - Mostra i membri di un certo gruppo")
+
+
+def today_turn(bot, update):
+    assigned_group = get_today_assigned_people()
+    try:
+        #try:
+        #assigned_group = TEMP #get_today_assigned_people()
+        #except Exception as ex:
+        #    log.error("Fetch data error!\n" + ex.message)
+
+        if assigned_group:
+            people = groups[assigned_group]
+            message = "Oggi il turno è del gruppo " + assigned_group + ", composto da " + \
+                      ", ".join(people)
+            bot.sendMessage(update.message.chat_id, message)
+    except Exception as ex:
+        log.error("Unable to send Telegram message!\n" + ex.message)
+        bot.sendMessage(update.message.chat_id, "Mi dispiace, in questo momento non riesco a ottenere i turni di oggi.")
+
+
+def get_group(bot, update, args):
+    args = args[0]
+    try:
+        people = groups[str(args)]
+        message = "Il gruppo " + str(args) + " è formato da " + \
+                  ", ".join(people) + "."
+        bot.sendMessage(update.message.chat_id, message)
+    except Exception as ex:
+        bot.sendMessage(update.message.chat_id,
+                        "Non ho capito bene il numero del gruppo. I gruppi possibili vanno da 1 a 40.")
+        log.error(ex.message)
+
+def echo(bot, update):
+    bot.sendMessage(update.message.chat_id, "Mi dispiace, posso solo risponderti se usi uno dei comandi in /help.")
+
 
 def main():
     pass
