@@ -3,7 +3,7 @@
 import logging as log
 
 from google_calendar import get_today_assigned_people
-from secrets import groups
+from secrets import groups, group_chat_id
 
 
 def start(bot, update):
@@ -30,7 +30,8 @@ def today_turn(bot, update):
 
 
 def defaultResponse(bot, update):
-    bot.sendMessage(update.message.chat_id, "Mi dispiace, posso solo risponderti se usi uno dei comandi in /help.")
+    if (update.message.chat_id != group_chat_id):
+        bot.sendMessage(update.message.chat_id, "Mi dispiace, posso solo risponderti se usi uno dei comandi in /help.")
 
 
 def get_group(bot, update, args):

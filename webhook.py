@@ -21,18 +21,16 @@ class WebHookHandler(webapp2.RequestHandler):
 
 
 class UpdateHandler(webapp2.RequestHandler):
-    def get(self):
-        # Retrieve the message in JSON and then transform it to Telegram object
-        body = json.loads(self.request.body)
-        update = telegram.update.Update.de_json(body, ccn_bot)
-        webhook(update)
+    def post(self):
+        webhook(telegram.Update.de_json(json.loads(self.request.body), ccn_bot))
+
+
 
 def webhook(update):
     dispatcher.process_update(update)
 
 
 def dispatcherSetup():
-    global dispatcher
     dispatcher = Dispatcher(bot=ccn_bot, update_queue=None, workers=0)
     dispatcher.add_handler(CommandHandler('start', start))
     dispatcher.add_handler(CommandHandler('oggi', today_turn))
