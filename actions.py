@@ -8,7 +8,7 @@ from secrets import groups, group_chat_id
 
 def start(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text="Ciao! Questo è il bot del Cooking Corner del Nest"
-                     + ". Per iniziare scrivi un comando o scrivi /help per aiuto.")
+                                                          + ". Per iniziare scrivi un comando o scrivi /help per aiuto.\nOgni altra richiesta verrà ignorata.")
 
 
 def help(bot, update):
