@@ -1,5 +1,5 @@
 application: cooking-club-nest-bot
-version: 2-gamma
+version: 2-delta
 runtime: python27
 api_version: 1
 threadsafe: yes

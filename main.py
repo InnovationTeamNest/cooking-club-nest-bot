@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import webapp2
-import ccn_bot
-from webhook import WebHookHandler, WebHookSetter
 from timeit import default_timer as timer
 
+import webapp2
+
+import ccn_bot
+from webhook import WebHookHandler, UpdateHandler
 
 
 class MainHandler(webapp2.RequestHandler):
@@ -23,6 +24,6 @@ class TurnHandler(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
     ('/turn', TurnHandler),
-    ('/setwebhook', WebHookSetter),
-    ('/' + ccn_bot.ccn_bot_token, WebHookHandler)
+    ('/set_webhook', WebHookHandler),
+    ('/' + ccn_bot.ccn_bot_token, UpdateHandler)
 ], debug=True)

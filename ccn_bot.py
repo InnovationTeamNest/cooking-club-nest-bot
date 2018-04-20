@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import google.appengine.ext.ndb as ndb
 import logging as log
 import time
+
+import google.appengine.ext.ndb as ndb
 import telegram
 
 from google_calendar import get_today_assigned_people
 from secrets import ccn_bot_token, group_chat_id, groups
+
+ccn_bot = telegram.Bot(ccn_bot_token)
 
 MAX_ATTEMPTS = 5
 
@@ -64,7 +67,6 @@ def send_notification(date, assigned_group, counter=0):
         # the group in this case.
         if assigned_group:
             people = groups[assigned_group]
-            ccn_bot = telegram.Bot(ccn_bot_token)
             # TODO Improve and add Easter egg...
 
             if (int(assigned_group) < 100):
