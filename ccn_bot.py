@@ -4,10 +4,11 @@ import google.appengine.ext.ndb as ndb
 import logging as log
 import time
 import telegram
+import json
 
 from google_calendar import get_today_assigned_people
-from secrets import ccn_bot_token, group_chat_id, groups
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from secrets import ccn_bot_token, group_chat_id, groups, url
+from telegram.ext import Dispatcher, CommandHandler, MessageHandler, Filters
 
 MAX_ATTEMPTS = 5
 
@@ -86,23 +87,17 @@ def send_notification(date, assigned_group, counter=0):
             time.sleep(2**counter)
             send_notification(date, assigned_group, counter + 1)
 
-def messageHandler():
-    updater = Updater(token=ccn_bot_token)
-    dispatcher = updater.dispatcher
+def dispatcherSetup():
+    dispatcher = Dispatcher(bot=telegram.Bot(ccn_bot_token), update_queue=None, workers=0)
 
-    start_handler = CommandHandler('start', start)
-    turn_handler = CommandHandler('oggi', today_turn)
-    group_handler = CommandHandler("gruppo", get_group, pass_args=True)
-    help_handler = CommandHandler("help", help)
-    echo_handler = MessageHandler(Filters.text, echo)
+    dispatcher.add_handler(CommandHandler('start', start))
+    dispatcher.add_handler(CommandHandler('oggi', today_turn))
+    dispatcher.add_handler(CommandHandler("gruppo", get_group, pass_args=True))
+    dispatcher.add_handler(CommandHandler("help", help))
+    dispatcher.add_handler(MessageHandler(Filters.text, echo))
 
-    dispatcher.add_handler(start_handler)
-    dispatcher.add_handler(turn_handler)
-    dispatcher.add_handler(group_handler)
-    dispatcher.add_handler(help_handler)
-    dispatcher.add_handler(echo_handler)
+    return dispatcher
 
-    updater.start_polling()
 
 def start(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text="Ciao! Questo è il bot del Cooking Corner del Nest"
@@ -145,6 +140,25 @@ def get_group(bot, update, args):
 
 def echo(bot, update):
     bot.sendMessage(update.message.chat_id, "Mi dispiace, posso solo risponderti se usi uno dei comandi in /help.")
+
+def setwebhook(self):
+        dispatcherSetup()
+        s = telegram.Bot(ccn_bot_token).setWebhook(url + '/' + ccn_bot_token)
+        if s:
+            self.response.write("Webhook setted")
+        else:
+            self.response.write("Webhook setup failed")
+
+def webhook_handler(self):
+    # Retrieve the message in JSON and then transform it to Telegram object
+    body = json.loads(self.request.body)
+    update = telegram.Update.de_json(body)
+    webhook(update)
+
+
+def webhook(update):
+    global dispatcher
+    dispatcher.process_update(update)
 
 
 def main():

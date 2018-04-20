@@ -17,12 +17,18 @@ class TurnHandler(webapp2.RequestHandler):
         self.response.write("Request completed in " +
                             str((timer() - start_time)) + " seconds.")
 
-class UserHandler(webapp2.RequestHandler):
-    def get(self):
-        ccn_bot.messageHandler()
+
+class WebHookHandler(webapp2.RequestHandler):
+    def set_webhook(self):
+        ccn_bot.setwebhook(self)
+
+    def webhook_handler(self):
+        ccn_bot.webhook_handler(self)
+
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
     ('/turn', TurnHandler),
-    ('/activateusermode', UserHandler)
+    ('/setwebhook', WebHookHandler.set_webhook()),
+    ('/' + ccn_bot.ccn_bot_token, WebHookHandler.webhook_handler())
 ], debug=True)
