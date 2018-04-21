@@ -6,18 +6,19 @@ import time
 import google.appengine.ext.ndb as ndb
 import telegram
 
-from google_calendar import get_today_assigned_people
+from google_calendar import getAssignedPeople
 from secrets import ccn_bot_token, group_chat_id, groups
 
 ccn_bot = telegram.Bot(ccn_bot_token)
 
 MAX_ATTEMPTS = 5
 
-def check_turn(counter=0):
+
+def checkTurn(counter=0):
     today = time.strftime("%d/%m/%Y")
 
     try:
-        res = day_already_checked(today)
+        res = dayAlreadyChecked(today)
         log.info("Already checked? " + repr(res))
         if res:
             return
@@ -31,18 +32,18 @@ def check_turn(counter=0):
              str(time.strftime("%c")))
 
     try:
-        assigned_group = get_today_assigned_people()
+        assigned_group = getAssignedPeople(0)
     except Exception as ex:
         log.error("Unable to fetch data from Google Calendar... "
                   "No notification for today... What a pity!")
         if counter < MAX_ATTEMPTS:
             time.sleep(2**counter)
-            check_turn(counter + 1)
+            checkTurn(counter + 1)
         log.error(ex.message)
         return
     try:
         log.info("Today's turn: " + assigned_group)
-        send_notification(today, assigned_group)
+        sendNotification(today, assigned_group)
     except Exception as ex:
         log.error("Unable to fetch data from Google Calendar... "
                   "No notification for today... What a pity!")
@@ -57,11 +58,11 @@ class CheckedDay(ndb.Model):
     date = ndb.DateTimeProperty(auto_now_add=True)
 
 
-def day_already_checked(date):
+def dayAlreadyChecked(date):
         return ndb.Key('CheckedDay', date).get()
 
 
-def send_notification(date, assigned_group, counter=0):
+def sendNotification(date, assigned_group, counter=0):
     try:
         # there could be days with no turn. It is useless to send a message to
         # the group in this case.
@@ -85,7 +86,7 @@ def send_notification(date, assigned_group, counter=0):
         log.error(ex.message)
         if counter < MAX_ATTEMPTS:
             time.sleep(2**counter)
-            send_notification(date, assigned_group, counter + 1)
+            sendNotification(date, assigned_group, counter + 1)
 
 
 def main():

@@ -16,7 +16,7 @@ class MainHandler(webapp2.RequestHandler):
 class TurnHandler(webapp2.RequestHandler):
     def get(self):
         start_time = timer()
-        ccn_bot.check_turn()
+        ccn_bot.checkTurn()
         self.response.write("Request completed in " +
                             str((timer() - start_time)) + " seconds.")
 
