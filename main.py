@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import webapp2
-import ccn_bot
 from timeit import default_timer as timer
+
+import webapp2
+
+import ccn_bot
+from webhook import WebHookHandler, UpdateHandler
 
 
 class MainHandler(webapp2.RequestHandler):
@@ -13,12 +16,14 @@ class MainHandler(webapp2.RequestHandler):
 class TurnHandler(webapp2.RequestHandler):
     def get(self):
         start_time = timer()
-        ccn_bot.check_turn()
+        ccn_bot.checkTurn()
         self.response.write("Request completed in " +
                             str((timer() - start_time)) + " seconds.")
 
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
-    ('/turn', TurnHandler)
+    ('/turn', TurnHandler),
+    ('/set_webhook', WebHookHandler),
+    ('/' + ccn_bot.ccn_bot_token, UpdateHandler)
 ], debug=True)
