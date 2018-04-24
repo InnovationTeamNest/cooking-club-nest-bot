@@ -2,7 +2,7 @@ import json
 
 import telegram
 import webapp2
-from telegram.ext import Dispatcher, CommandHandler, Filters
+from telegram.ext import Dispatcher, CommandHandler, MessageHandler, Filters
 
 import actions
 from secrets import url, ccn_bot_token
@@ -40,6 +40,5 @@ def dispatcherSetup():
     dispatcher.add_handler(CommandHandler("gruppo", actions.getGroup, pass_args=True))
     dispatcher.add_handler(CommandHandler("direttivo", actions.direttivo))
     dispatcher.add_handler(
-        CommandHandler(Filters.reply, actions.risposteDirettivo))  # TODO Expand functionality of reply handler
+        MessageHandler(Filters.reply, actions.risposteDirettivo))  # TODO Expand functionality of reply handler
     # dispatcher.add_handler(MessageHandler(Filters.text, defaultResponse))
-    return dispatcher
