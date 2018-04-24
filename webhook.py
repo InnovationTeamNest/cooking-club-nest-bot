@@ -2,9 +2,9 @@ import json
 
 import telegram
 import webapp2
-from telegram.ext import Dispatcher, CommandHandler
+from telegram.ext import Dispatcher, CommandHandler, Filters
 
-from actions import start, todayTurn, getGroup, help, tomorrowTurn, direttivo, info
+import actions
 from secrets import url, ccn_bot_token
 
 ccn_bot = telegram.Bot(ccn_bot_token)
@@ -32,12 +32,14 @@ def webhook(update):
 def dispatcherSetup():
     global dispatcher
     dispatcher = Dispatcher(bot=ccn_bot, update_queue=None, workers=0)
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("help", help))
-    dispatcher.add_handler(CommandHandler("info", info))
-    dispatcher.add_handler(CommandHandler("oggi", todayTurn))
-    dispatcher.add_handler(CommandHandler("domani", tomorrowTurn))
-    dispatcher.add_handler(CommandHandler("gruppo", getGroup, pass_args=True))
-    dispatcher.add_handler(CommandHandler("direttivo", direttivo))
+    dispatcher.add_handler(CommandHandler("start", actions.start))
+    dispatcher.add_handler(CommandHandler("help", actions.help))
+    dispatcher.add_handler(CommandHandler("info", actions.info))
+    dispatcher.add_handler(CommandHandler("oggi", actions.todayTurn))
+    dispatcher.add_handler(CommandHandler("domani", actions.tomorrowTurn))
+    dispatcher.add_handler(CommandHandler("gruppo", actions.getGroup, pass_args=True))
+    dispatcher.add_handler(CommandHandler("direttivo", actions.direttivo))
+    dispatcher.add_handler(
+        CommandHandler(Filters.reply, actions.risposteDirettivo))  # TODO Expand functionality of reply handler
     # dispatcher.add_handler(MessageHandler(Filters.text, defaultResponse))
     return dispatcher
