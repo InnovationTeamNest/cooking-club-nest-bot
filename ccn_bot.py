@@ -13,7 +13,6 @@ ccn_bot = telegram.Bot(ccn_bot_token)
 
 MAX_ATTEMPTS = 5
 
-
 def checkTurn(counter=0):
     today = time.strftime("%d/%m/%Y")
 
@@ -30,17 +29,7 @@ def checkTurn(counter=0):
 
     log.info("Checking turn for day " + today + " at " +
              str(time.strftime("%c")))
-
-    try:
-        assigned_group = getAssignedPeople(0)
-    except Exception as ex:
-        log.error("Unable to fetch data from Google Calendar... "
-                  "No notification for today... What a pity!")
-        if counter < MAX_ATTEMPTS:
-            time.sleep(2**counter)
-            checkTurn(counter + 1)
-        log.error(ex.message)
-        return
+    assigned_group = fetchTurnCalendar(0, counter)
     try:
         log.info("Today's turn: " + assigned_group)
         sendNotification(today, assigned_group)
@@ -49,6 +38,19 @@ def checkTurn(counter=0):
                   "No notification for today... What a pity!")
         log.error(ex.message)
 
+
+def fetchTurnCalendar(offset, counter):
+    try:
+        assigned_group = getAssignedPeople(offset)
+    except Exception as ex:
+        log.error("Unable to fetch data from Google Calendar... "
+                  "No notification for today... What a pity!")
+        if counter < MAX_ATTEMPTS:
+            time.sleep(2 ** counter)
+            checkTurn(counter + 1)
+        log.error(ex.message)
+        return
+    return assigned_group
 
 # this Datastore class is required to keep track of processed days
 

@@ -39,6 +39,5 @@ def dispatcherSetup():
     dispatcher.add_handler(CommandHandler("domani", actions.tomorrowTurn))
     dispatcher.add_handler(CommandHandler("gruppo", actions.getGroup, pass_args=True))
     dispatcher.add_handler(CommandHandler("direttivo", actions.direttivo))
-    dispatcher.add_handler(
-        MessageHandler(Filters.reply, actions.risposteDirettivo))  # TODO Expand functionality of reply handler
+    dispatcher.add_handler(MessageHandler(Filters.reply, actions.textFilter))
     # dispatcher.add_handler(MessageHandler(Filters.text, defaultResponse))
