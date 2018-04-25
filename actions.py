@@ -8,7 +8,15 @@ from secrets import groups, direttivoid
 
 class ReplyStatus:
     direttivoresponse = False
+    groupresponse = False
 
+    @staticmethod
+    def allfalse():
+        ReplyStatus.direttivoresponse = False
+        ReplyStatus.groupresponse = False
+
+
+# TODO Add try-except to all methods and add comments
 
 def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id,
@@ -63,27 +71,49 @@ def tomorrowTurn(bot, update):
         log.error("Unable to send Telegram message!\n" + ex.message)
 
 
+# Metodi che supportano le risposte dirette in chat
+
 def getGroup(bot, update, args):
-    args = args[0]
+    ReplyStatus.allfalse()
     try:
+        args = args[0]
         people = groups[str(args)]
         message = "Il gruppo " + str(args) + " è formato da " + \
                   ", ".join(people) + "."
         bot.sendMessage(update.message.chat_id, message)
     except Exception as ex:
         bot.sendMessage(update.message.chat_id,
-                        "Scrivi /gruppo seguito da un numero da 1 a 40 per ottenere informazioni sul gruppo.")
+                        "Inserisci un numero da 1 a 40 per ottenere informazioni sul gruppo.")
+        ReplyStatus.groupresponse = True
         log.error(ex.message)
 
 
 def direttivo(bot, update):
-    chat_id = update.message.chat_id
-    bot.sendMessage(chat_id=chat_id,
-                    force_reply=True,
-                    text="Rispondi a questo messaggio per recapitare un messaggio " + \
-                         "al Direttivo. Segnalazioni, suggerimenti sono ben accetti. Eventuali abusi saranno puniti con un richiamo.\n")
+    ReplyStatus.allfalse()
+    try:
+        chat_id = update.message.chat_id
+        bot.sendMessage(chat_id=chat_id,
+                        force_reply=True,
+                        text="Rispondi a questo messaggio per recapitare un messaggio " + \
+                             "al Direttivo. Segnalazioni, suggerimenti sono ben accetti." + \
+                             "Eventuali abusi saranno puniti con un richiamo.\n")
+    except Exception as ex:
+        log.error(ex.message)
     ReplyStatus.direttivoresponse = True
 
+
+# Metodo per getstire le risposte in chat
+
+def textFilter(bot, update):
+    if ReplyStatus.direttivoresponse:
+        rispostaDirettivo(bot, update)
+    elif ReplyStatus.groupresponse:
+        rispostaGruppi(bot, update)
+    # else:
+    # bot.sendMessage(update.message.chat_id, "Mi dispiace, posso solo risponderti se usi uno dei comandi in /help.")
+
+
+# Metodi che gestiscono le rispettive risposte
 
 def rispostaDirettivo(bot, update):
     try:  # TODO Add datastore to failed message
@@ -100,8 +130,15 @@ def rispostaDirettivo(bot, update):
     ReplyStatus.direttivoresponse = False
 
 
-def textFilter(bot, update):
-    if ReplyStatus.direttivoresponse:
-        rispostaDirettivo(bot, update)
-    else:
-        bot.sendMessage(update.message.chat_id, "Mi dispiace, posso solo risponderti se usi uno dei comandi in /help.")
+def rispostaGruppi(bot, update):
+    try:
+        text = update.message.text
+        if groups.has_key(text):
+            getGroup(bot, update, (text, 0))
+        else:
+            bot.sendMessage(update.message.chat_id, "ID del gruppo non valido")
+    except Exception as ex:
+        bot.sendMessage(update.message.chat_id,
+                        "Qualcosa è andato storto. Riprova più tardi.")
+        log.error(ex.message)
+    ReplyStatus.groupresponse = False
