@@ -13,6 +13,7 @@ ccn_bot = telegram.Bot(ccn_bot_token)
 
 MAX_ATTEMPTS = 5
 
+
 def checkTurn(counter=0):
     today = time.strftime("%d/%m/%Y")
 

@@ -16,64 +16,76 @@ class ReplyStatus:
         ReplyStatus.groupresponse = False
 
 
-# TODO Add try-except to all methods and add comments
+# Metodi di base, start, help e info
 
 def start(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id,
-                    text="Ciao! Questo è il bot del Cooking Corner del Nest, mantenuto dal club Tech@Nest."
-                          + ". Per iniziare scrivi un comando o scrivi /help per aiuto.\nOgni altra richiesta verrà ignorata.")
-
-
-def help(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id,
-                    text="/info - Ottieni informazioni sul e sul Direttivo del Cooking Corner" +
-                         "\n/oggi - Mostra il turno di oggi" +
-                         "\n/domani - Mostra il turno di domani" +
-                         "\n/gruppo <#> - Mostra i membri di un certo gruppo" +
-                         "\n/direttivo - Conttatta il Direttivo del Cooking Corner")
-
-
-def info(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id,
-                    text="Ciao! Questo bot è stato creato dal club Tech@Nest durante un Hackaton nel novembre 2017." +
-                          " Il bot è stato ideato da Gianvito Taneburgo, ora non più al Nest. Al momento il bot è mantenuto da Matteo Franzil" +
-                          ", se serve aiuto conttattalo su @mfranzil.")
-    bot.send_message(chat_id=update.message.chat_id,
-                     text="Membri del Direttivo:\n\nSofia Caruso, Matteo Franzil, Matteo Marra, " +
-                          "Alice Massa, Francesco Misiano, Nicola Pozza, Giovanni Rachello. ")
-
-
-def todayTurn(bot, update):
-    assigned_group = fetchTurnCalendar(0, 5)
     try:
-        if assigned_group:
-            people = groups[assigned_group]
-            message = "Oggi il turno è del gruppo " + assigned_group + ", composto da " + \
-                      ", ".join(people)
-            bot.sendMessage(update.message.chat_id, message)
-        else:
-            bot.sendMessage(update.message.chat_id, "Nessun turno previsto per oggi!")
+        bot.sendMessage(chat_id=update.message.chat_id,
+                        text="Ciao! Questo è il bot del Cooking Corner del Nest, mantenuto dal club Tech@Nest."
+                             + ". Per iniziare scrivi un comando o scrivi /help per aiuto.\nOgni altra richiesta verrà ignorata.")
     except Exception as ex:
         log.error("Unable to send Telegram message!\n" + ex.message)
 
 
+def help(bot, update):
+    try:
+        bot.sendMessage(chat_id=update.message.chat_id,
+                        text="/info - Ottieni informazioni sul e sul Direttivo del Cooking Corner" +
+                             "\n/oggi - Mostra il turno di oggi" +
+                             "\n/domani - Mostra il turno di domani" +
+                             "\n/gruppo <#> - Mostra i membri di un certo gruppo" +
+                             "\n/direttivo - Conttatta il Direttivo del Cooking Corner")
+    except Exception as ex:
+        log.error("Unable to send Telegram message!\n" + ex.message)
+
+def info(bot, update):
+    try:
+        bot.sendMessage(chat_id=update.message.chat_id,
+                        text="Ciao! Questo bot è stato creato dal club Tech@Nest durante un Hackaton nel novembre 2017." +
+                             " Il bot è stato ideato da Gianvito Taneburgo, ora non più al Nest." +
+                             "Al momento il bot è mantenuto da Matteo Franzil, se serve aiuto conttattalo su @mfranzil.")
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="Membri del Direttivo:\n\nSofia Caruso, Matteo Franzil, Matteo Marra, " +
+                              "Alice Massa, Francesco Misiano, Nicola Pozza, Giovanni Rachello. ")
+    except Exception as ex:
+        log.error("Unable to send Telegram message!\n" + ex.message)
+
+
+# Metodi  per fetchare i turni del giorno
+
+def todayTurn(bot, update):
+    turn(bot, update, 0)
+
+
 def tomorrowTurn(bot, update):
-    assigned_group = fetchTurnCalendar(1, 5)
+    turn(bot, update, 1)
+
+
+def turn(bot, update, day):
+    assigned_group = fetchTurnCalendar(day, 5)
     try:
         if assigned_group:
             people = groups[assigned_group]
-            message = "Domani sarà il turno del gruppo " + assigned_group + ", composto da " + \
+
+            if day == 0:
+                message = "Oggi è"
+            elif day == 1:
+                message = "Domani sarà"
+            else:
+                message = ""  # message = dayToString() # TODO IMPLEMENT FUNCTION FOR ANY TYPE OF DAY
+
+            message = message + " il turno del gruppo " + assigned_group + ", composto da " + \
                       ", ".join(people)
             bot.sendMessage(update.message.chat_id, message)
         else:
-            bot.sendMessage(update.message.chat_id, "Nessun turno previsto per domani!")
+            bot.sendMessage(update.message.chat_id, "Nessun turno previsto per questa data!")
     except Exception as ex:
         log.error("Unable to send Telegram message!\n" + ex.message)
 
 
 # Metodi che supportano le risposte dirette in chat
 
-def getGroup(bot, update, args):
+def group(bot, update, args):
     ReplyStatus.allfalse()
     try:
         args = args[0]
@@ -106,16 +118,16 @@ def direttivo(bot, update):
 
 def textFilter(bot, update):
     if ReplyStatus.direttivoresponse:
-        rispostaDirettivo(bot, update)
+        responseDirettivo(bot, update)
     elif ReplyStatus.groupresponse:
-        rispostaGruppi(bot, update)
+        responseGroup(bot, update)
     # else:
     # bot.sendMessage(update.message.chat_id, "Mi dispiace, posso solo risponderti se usi uno dei comandi in /help.")
 
 
 # Metodi che gestiscono le rispettive risposte
 
-def rispostaDirettivo(bot, update):
+def responseDirettivo(bot, update):
     try:  # TODO Add datastore to failed message
         if update.message.from_user.last_name == None:
             bot.sendMessage(chat_id=direttivoid, text=str(update.message.from_user.first_name) + " scrive:\n\n" + \
@@ -130,11 +142,11 @@ def rispostaDirettivo(bot, update):
     ReplyStatus.direttivoresponse = False
 
 
-def rispostaGruppi(bot, update):
+def responseGroup(bot, update):
     try:
         text = update.message.text
-        if groups.has_key(text):
-            getGroup(bot, update, (text, 0))
+        if text in groups:
+            group(bot, update, (text, 0))
         else:
             bot.sendMessage(update.message.chat_id, "ID del gruppo non valido")
     except Exception as ex:

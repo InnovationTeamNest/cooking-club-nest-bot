@@ -9,6 +9,7 @@ from secrets import url, ccn_bot_token
 
 ccn_bot = telegram.Bot(ccn_bot_token)
 
+
 class WebHookHandler(webapp2.RequestHandler):
     def get(self):
         dispatcherSetup()
@@ -32,7 +33,7 @@ def dispatcherSetup():
     dispatcher.add_handler(CommandHandler("info", actions.info))
     dispatcher.add_handler(CommandHandler("oggi", actions.todayTurn))
     dispatcher.add_handler(CommandHandler("domani", actions.tomorrowTurn))
-    dispatcher.add_handler(CommandHandler("gruppo", actions.getGroup, pass_args=True))
+    dispatcher.add_handler(CommandHandler("gruppo", actions.group, pass_args=True))
     dispatcher.add_handler(CommandHandler("direttivo", actions.direttivo))
     dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, actions.textFilter))
 
