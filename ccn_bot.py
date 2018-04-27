@@ -6,7 +6,7 @@ import time
 import google.appengine.ext.ndb as ndb
 import telegram
 
-from google_calendar import getAssignedPeople
+from google_calendar import get_assigned_people
 from secrets import ccn_bot_token, group_chat_id, groups
 
 ccn_bot = telegram.Bot(ccn_bot_token)
@@ -14,11 +14,11 @@ ccn_bot = telegram.Bot(ccn_bot_token)
 MAX_ATTEMPTS = 5
 
 
-def checkTurn(counter=0):
+def check_turn(counter=0):
     today = time.strftime("%d/%m/%Y")
 
     try:
-        res = dayAlreadyChecked(today)
+        res = day_already_checked(today)
         log.info("Already checked? " + repr(res))
         if res:
             return
@@ -30,30 +30,31 @@ def checkTurn(counter=0):
 
     log.info("Checking turn for day " + today + " at " +
              str(time.strftime("%c")))
-    assigned_group = fetchTurnCalendar(0, counter)
+    assigned_group = fetch_turn_calendar(0, counter)
     try:
         log.info("Today's turn: " + assigned_group)
-        sendNotification(today, assigned_group)
+        send_notification(today, assigned_group)
     except Exception as ex:
         log.error("Unable to fetch data from Google Calendar... "
                   "No notification for today... What a pity!")
         log.error(ex.message)
 
 
-def fetchTurnCalendar(offset, counter):
+def fetch_turn_calendar(offset, counter):
     try:
-        assigned_group = getAssignedPeople(offset)
+        assigned_group = get_assigned_people(offset)
     except Exception as ex:
         log.error("Unable to fetch data from Google Calendar... "
                   "No notification for today... What a pity!")
         if counter < MAX_ATTEMPTS:
             time.sleep(2 ** counter)
-            checkTurn(counter + 1)
+            check_turn(counter + 1)
         log.error(ex.message)
         return
     return assigned_group
 
 # this Datastore class is required to keep track of processed days
+
 
 class CheckedDay(ndb.Model):
     day = ndb.StringProperty(indexed=False)
@@ -61,11 +62,11 @@ class CheckedDay(ndb.Model):
     date = ndb.DateTimeProperty(auto_now_add=True)
 
 
-def dayAlreadyChecked(date):
+def day_already_checked(date):
         return ndb.Key('CheckedDay', date).get()
 
 
-def sendNotification(date, assigned_group, counter=0):
+def send_notification(date, assigned_group, counter=0):
     try:
         # there could be days with no turn. It is useless to send a message to
         # the group in this case.
@@ -73,7 +74,7 @@ def sendNotification(date, assigned_group, counter=0):
             people = groups[assigned_group]
             # TODO Improve and add Easter egg...
 
-            if (int(assigned_group) < 100):
+            if int(assigned_group) < 100:
                 message = "Salve! Oggi il turno di pulizie è del gruppo " + assigned_group + ", composto da " + \
                       ", ".join(people) + ".\n\nBuona fortuna!"
             else:
@@ -89,7 +90,7 @@ def sendNotification(date, assigned_group, counter=0):
         log.error(ex.message)
         if counter < MAX_ATTEMPTS:
             time.sleep(2**counter)
-            sendNotification(date, assigned_group, counter + 1)
+            send_notification(date, assigned_group, counter + 1)
 
 
 def main():
