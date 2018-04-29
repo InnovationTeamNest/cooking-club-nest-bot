@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import logging as log
-import time
+import time  # TODO Merge datetime and time and move offset to google_calendar.py
 
 import google.appengine.ext.ndb as ndb
 import telegram
@@ -40,8 +41,9 @@ def check_turn(counter=0):
         log.error(ex.message)
 
 
-def fetch_turn_calendar(offset, counter):
+def fetch_turn_calendar(date, counter):
     try:
+        offset = date.day - datetime.date.today().day
         assigned_group = get_assigned_people(offset)
     except Exception as ex:
         log.error("Unable to fetch data from Google Calendar... "
