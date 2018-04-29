@@ -31,7 +31,7 @@ def check_turn(counter=0):
 
     log.info("Checking turn for day " + today + " at " +
              str(time.strftime("%c")))
-    assigned_group = fetch_turn_calendar(0, counter)
+    assigned_group = fetch_turn_calendar(datetime.date.today(), counter)
     try:
         log.info("Today's turn: " + assigned_group)
         send_notification(today, assigned_group)

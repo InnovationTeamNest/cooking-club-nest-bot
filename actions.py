@@ -71,7 +71,7 @@ def turn(bot, day, chat_id):
     try:
         if assigned_group:
             people = groups[assigned_group]
-            if int(assigned_group) < MAX_GROUPS:
+            if int(assigned_group) <= MAX_GROUPS:
                 message = day_to_string(day, True) + " il turno del gruppo " + assigned_group + ", composto da " + \
                           ", ".join(people) + "."
             else:
@@ -148,7 +148,7 @@ def group(bot, update, args):
     ReplyStatus.allfalse()
     try:
         args = args[0]
-        if str(args) in groups and int(args) < MAX_GROUPS:
+        if str(args) in groups and int(args) <= MAX_GROUPS:
             people = groups[str(args)]
             message = "Il gruppo " + str(args) + " è formato da " + \
                       ", ".join(people) + "."
