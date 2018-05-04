@@ -13,6 +13,8 @@ from secrets import ccn_bot_token, group_chat_id, groups
 ccn_bot = telegram.Bot(ccn_bot_token)
 
 MAX_ATTEMPTS = 5
+MAX_MESSAGES = 20
+MAX_GROUPS = 40
 
 
 def check_turn(counter=0):
@@ -55,6 +57,7 @@ def fetch_turn_calendar(date, counter):
         return
     return assigned_group
 
+
 # this Datastore class is required to keep track of processed days
 
 
@@ -65,7 +68,7 @@ class CheckedDay(ndb.Model):
 
 
 def day_already_checked(date):
-        return ndb.Key('CheckedDay', date).get()
+    return ndb.Key('CheckedDay', date).get()
 
 
 def send_notification(date, assigned_group, counter=0):
@@ -78,10 +81,10 @@ def send_notification(date, assigned_group, counter=0):
 
             if int(assigned_group) < 100:
                 message = "Salve! Oggi il turno di pulizie è del gruppo " + assigned_group + ", composto da " + \
-                      ", ".join(people) + ".\n\nBuona fortuna!"
+                          ", ".join(people) + ".\n\nBuona fortuna!"
             else:
                 message = "Salve! Oggi dovranno scontare il proprio richiamo " + \
-                      ", ".join(people) + ".\n\nBuona fortuna!"
+                          ", ".join(people) + ".\n\nBuona fortuna!"
             sent_message = ccn_bot.sendMessage(group_chat_id, message)
             ccn_bot.pinChatMessage(group_chat_id, sent_message.message_id)
         # the date can be considered processed in any case
@@ -91,7 +94,7 @@ def send_notification(date, assigned_group, counter=0):
                   "today... What a pity!")
         log.error(ex.message)
         if counter < MAX_ATTEMPTS:
-            time.sleep(2**counter)
+            time.sleep(2 ** counter)
             send_notification(date, assigned_group, counter + 1)
 
 
