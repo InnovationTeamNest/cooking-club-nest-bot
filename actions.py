@@ -85,7 +85,7 @@ def direttivo(bot, update):
         chat_id = update.message.chat_id
         bot.send_message(chat_id=chat_id,
                          text="Rispondi a questo messaggio per recapitare un messaggio " +
-                              "al Direttivo. Segnalazioni, suggerimenti sono ben accetti." +
+                              "al Direttivo. Segnalazioni, suggerimenti sono ben accetti. " +
                               "Eventuali abusi saranno puniti con un richiamo.\n")
     except Exception as ex:
         log.error(ex.message)
