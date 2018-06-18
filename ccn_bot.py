@@ -98,6 +98,37 @@ def send_notification(date, assigned_group, counter=0):
             send_notification(date, assigned_group, counter + 1)
 
 
+def weekly_notification(date, counter):
+    try:
+        message = "Salve! Questa settimana toccherà ai seguenti gruppi: "
+        date = date + datetime.timedelta(days=-1)
+        for i in range(0, 7):
+            date = date + datetime.timedelta(days=1)
+            assigned_group = fetch_turn_calendar(date)
+            try:
+                if assigned_group is None:
+                    message_temp = "\n" + str(date) + " - Nessuno"
+                else:
+                    people = groups[assigned_group]
+                    message_temp = "\n" + str(date) + " - Gruppo " + \
+                                   str(assigned_group) + ": " + \
+                                   ", ".join(people)
+                message = str(message) + str(message_temp)
+            except Exception as ex:
+                log.error("Unable to fetch data from Google Calendar... "
+                          "No notification for today... What a pity!")
+                log.error(ex.message)
+        sent_message = ccn_bot.send_message(group_chat_id, message)
+        ccn_bot.pinChatMessage(group_chat_id, sent_message.message_id)
+    except Exception as ex:
+        log.error("Unable to send Telegram notification. No notification for "
+                  "today... What a pity!")
+        log.error(ex.message)
+        if counter < MAX_ATTEMPTS:
+            time.sleep(2 ** counter)
+            weekly_notification(date, counter + 1)
+
+
 def main():
     pass
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 from timeit import default_timer as timer
 
 import webapp2
@@ -21,9 +22,18 @@ class TurnHandler(webapp2.RequestHandler):
                             str((timer() - start_time)) + " seconds.")
 
 
+class WeeklyHandler(webapp2.RequestHandler):
+    def get(self):
+        start_time = timer()
+        ccn_bot.weekly_notification(datetime.date.today(), 0)
+        self.response.write("Request completed in " +
+                            str((timer() - start_time)) + " seconds.")
+
+
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
     ('/turn', TurnHandler),
     ('/set_webhook', WebHookHandler),
+    ('/weekly', WeeklyHandler),
     ('/' + ccn_bot.ccn_bot_token, UpdateHandler)
 ], debug=True)

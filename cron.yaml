@@ -5,3 +5,6 @@ cron:
 - description: set up the webhook to prevent failures
   url: /set_webhook
   schedule: every 5 hours
+- description: send weekly turns
+  url: /weekly
+  schedule: every monday 09:00
