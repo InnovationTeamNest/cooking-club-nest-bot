@@ -98,20 +98,22 @@ def send_notification(date, assigned_group, counter=0):
             send_notification(date, assigned_group, counter + 1)
 
 
-def weekly_notification(date, counter):
+def weekly_notification(date):
     try:
         message = "Salve! Questa settimana toccherà ai seguenti gruppi: "
         date = date + datetime.timedelta(days=-1)
         for i in range(0, 7):
             date = date + datetime.timedelta(days=1)
-            assigned_group = fetch_turn_calendar(date)
+            assigned_group = fetch_turn_calendar(date, 0)
+            print assigned_group
             try:
                 if assigned_group is None:
-                    message_temp = "\n" + str(date) + " - Nessuno"
+                    message_temp = "\n" + \
+                                   date.strftime("%A %d %B") + " - Nessuno"
                 else:
                     people = groups[assigned_group]
-                    message_temp = "\n" + str(date) + " - Gruppo " + \
-                                   str(assigned_group) + ": " + \
+                    message_temp = "\n" + date.strftime("%A %d %B") + \
+                                   " - Gruppo " + str(assigned_group) + ": " + \
                                    ", ".join(people)
                 message = str(message) + str(message_temp)
             except Exception as ex:
@@ -124,9 +126,6 @@ def weekly_notification(date, counter):
         log.error("Unable to send Telegram notification. No notification for "
                   "today... What a pity!")
         log.error(ex.message)
-        if counter < MAX_ATTEMPTS:
-            time.sleep(2 ** counter)
-            weekly_notification(date, counter + 1)
 
 
 def main():

@@ -25,7 +25,7 @@ class TurnHandler(webapp2.RequestHandler):
 class WeeklyHandler(webapp2.RequestHandler):
     def get(self):
         start_time = timer()
-        ccn_bot.weekly_notification(datetime.date.today(), 0)
+        ccn_bot.weekly_notification(datetime.date.today())
         self.response.write("Request completed in " +
                             str((timer() - start_time)) + " seconds.")
 
