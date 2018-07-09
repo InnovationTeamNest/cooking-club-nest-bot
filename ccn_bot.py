@@ -52,15 +52,13 @@ def fetch_turn_calendar(date, counter):
                   "No notification for today... What a pity!")
         if counter < MAX_ATTEMPTS:
             time.sleep(2 ** counter)
-            check_turn(counter + 1)
+            fetch_turn_calendar(date, counter + 1)
         log.error(ex.message)
         return
     return assigned_group
 
 
 # this Datastore class is required to keep track of processed days
-
-
 class CheckedDay(ndb.Model):
     day = ndb.StringProperty(indexed=False)
     people = ndb.StringProperty(indexed=False)
@@ -80,7 +78,8 @@ def send_notification(date, assigned_group, counter=0):
             # TODO Improve and add Easter egg...
 
             if int(assigned_group) < 100:
-                message = "Salve! Oggi il turno di pulizie è del gruppo " + assigned_group + ", composto da " + \
+                message = "Salve! Oggi il turno di pulizie è del gruppo " \
+                          + assigned_group + ", composto da " + \
                           ", ".join(people) + ".\n\nBuona fortuna!"
             else:
                 message = "Salve! Oggi dovranno scontare il proprio richiamo " + \
@@ -109,10 +108,10 @@ def weekly_notification(date):
             try:
                 if assigned_group is None:
                     message_temp = "\n" + \
-                                   date.strftime("%A %d %B") + " - Nessuno"
+                                   translate_date(date) + " - Nessuno"
                 else:
                     people = groups[assigned_group]
-                    message_temp = "\n" + date.strftime("%A %d %B") + \
+                    message_temp = "\n" + translate_date(date) + \
                                    " - Gruppo " + str(assigned_group) + ": " + \
                                    ", ".join(people)
                 message = str(message) + str(message_temp)
@@ -126,6 +125,30 @@ def weekly_notification(date):
         log.error("Unable to send Telegram notification. No notification for "
                   "today... What a pity!")
         log.error(ex.message)
+
+
+def translate_date(date):
+    res = ""
+
+    if date.strftime("%A") == "Monday":
+        res += "Lunedi"
+    elif date.strftime("%A") == "Tuesday":
+        res += "Martedi"
+    elif date.strftime("%A") == "Wednesday":
+        res += "Mercoledi"
+    elif date.strftime("%A") == "Thursday":
+        res += "Giovedi"
+    elif date.strftime("%A") == "Friday":
+        res += "Venerdi"
+    elif date.strftime("%A") == "Saturday":
+        res += "Sabato"
+    elif date.strftime("%A") == "Sunday":
+        res += "Domenica"
+
+    res = res + " " + date.strftime("%d").lstrip("0") + "/" \
+          + date.strftime("%m").lstrip("0")
+
+    return res
 
 
 def main():
