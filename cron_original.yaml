@@ -1,0 +1,10 @@
+cron:
+- description: check daily turn from Google Calendar
+  url: /turn
+  schedule: every 5 minutes from 12:00 to 20:00
+- description: set up the webhook to prevent failures
+  url: /set_webhook
+  schedule: every 5 hours
+- description: send weekly turns
+  url: /weekly
+  schedule: every monday 09:00cron.yaml
