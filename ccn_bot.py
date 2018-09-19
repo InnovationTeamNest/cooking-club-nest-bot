@@ -14,7 +14,7 @@ ccn_bot = telegram.Bot(ccn_bot_token)
 
 MAX_ATTEMPTS = 5
 MAX_MESSAGES = 20
-MAX_GROUPS = 40
+MAX_GROUPS = 22
 
 
 def check_turn(counter=0):

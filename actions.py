@@ -69,8 +69,7 @@ def info(bot, update):
                               " 2017. Il bot è stato ideato da Gianvito Taneburgo, ora non più al Nest. Al momento" +
                               " il bot è mantenuto da Matteo Franzil, se serve aiuto conttattalo su @mfranzil.")
         bot.send_message(chat_id=update.message.chat_id,
-                         text="Membri del Direttivo:\n\nSofia Caruso, Matteo Franzil, Matteo Marra, " +
-                              "Alice Massa, Francesco Misiano, Nicola Pozza, Giovanni Rachello. ")
+                         text="Membri del Direttivo:\n\nMatteo Franzil, Matteo Marra.")
     except Exception as ex:
         log.error("Unable to send Telegram message!\n" + ex.message)
 
@@ -168,25 +167,25 @@ def response_search(bot, update):
 def dictionary_search(bot, update, name):
     try:
         found = 0
-        retval = []
+        results = ""
         bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
 
         for number, person in groups.iteritems():  # groups.items()  (Python 3)
-            for i in person:
-                if name.encode('ascii') in i:
-                    retval.append(i + " si trova nel gruppo " + str(number))
+            for search_result in person:
+                if name.encode('ascii') in search_result:
+                    results += "\n" + search_result + " si trova nel gruppo " + str(number)
                     found += 1
         # E' necessario gestire sia zero persone che troppe (20+) in questo caso
         if found == 0:
             bot.send_message(chat_id=update.message.chat_id,
                              text="Persona non trovata.")
         elif 0 < found < MAX_MESSAGES:
-            for i in range(0, len(retval)):
-                bot.send_message(chat_id=update.message.chat_id, text=retval[i])
+            for search_result in range(0, len(results)):
+                bot.send_message(chat_id=update.message.chat_id, text=results)
         else:
             bot.send_message(chat_id=update.message.chat_id,
                              text="Troppi risultati trovati (" + str(found) +
-                                  "), prova con un parametro più restrittivo.")
+                                  "+), prova con un parametro più restrittivo.")
     except Exception as ex:
         bot.send_message(chat_id=update.message.chat_id, text="Errore! Parametro di ricerca non valido.")
         log.error(ex.message + "from method dictionarySearch")
