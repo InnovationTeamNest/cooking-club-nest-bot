@@ -34,8 +34,6 @@ def text_filter(bot, update):  # Strettamente collegata alla classe definita in 
         response_search(bot, update)
     else:
         pass
-        # bot.send_message(update.message.chat_id, "Mi dispiace, posso solo risponderti se usi uno dei comandi in
-        # /help.")
 
 
 # Metodi di base, start, help e info
@@ -126,7 +124,7 @@ def search(bot, update, args):
 # Metodi che gestiscono le rispettive risposte
 
 def response_direttivo(bot, update):
-    try:  # TODO Add datastore for failed message
+    try:
         user = update.message.from_user
         if user.last_name is None:
             bot.send_message(chat_id=direttivoid,
@@ -189,7 +187,6 @@ def dictionary_search(bot, update, name):
             bot.send_message(chat_id=update.message.chat_id,
                              text="Troppi risultati trovati (" + str(found) +
                                   "), prova con un parametro più restrittivo.")
-    # TODO Fix random bug raising this exception
     except Exception as ex:
         bot.send_message(chat_id=update.message.chat_id, text="Errore! Parametro di ricerca non valido.")
         log.error(ex.message + "from method dictionarySearch")

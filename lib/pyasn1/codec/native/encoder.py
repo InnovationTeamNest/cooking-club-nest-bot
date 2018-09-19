@@ -1,8 +1,8 @@
 #
 # This file is part of pyasn1 software.
 #
-# Copyright (c) 2005-2017, Ilya Etingof <etingof@gmail.com>
-# License: http://pyasn1.sf.net/license.html
+# Copyright (c) 2005-2018, Ilya Etingof <etingof@gmail.com>
+# License: http://snmplabs.com/pyasn1/license.html
 #
 try:
     from collections import OrderedDict
@@ -10,8 +10,13 @@ try:
 except ImportError:
     OrderedDict = dict
 
-from pyasn1.type import base, univ, tag, char, useful
-from pyasn1 import debug, error
+from pyasn1 import debug
+from pyasn1 import error
+from pyasn1.type import base
+from pyasn1.type import char
+from pyasn1.type import tag
+from pyasn1.type import univ
+from pyasn1.type import useful
 
 __all__ = ['encode']
 
@@ -43,7 +48,7 @@ class OctetStringEncoder(AbstractItemEncoder):
 
 class TextStringEncoder(AbstractItemEncoder):
     def encode(self, value, encodeFun, **options):
-        return value.prettyPrint()
+        return str(value)
 
 
 class NullEncoder(AbstractItemEncoder):
@@ -127,14 +132,40 @@ tagMap = {
     useful.UTCTime.tagSet: OctetStringEncoder()
 }
 
-# Type-to-codec map for ambiguous ASN.1 types
+
+# Put in ambiguous & non-ambiguous types for faster codec lookup
 typeMap = {
+    univ.Boolean.typeId: BooleanEncoder(),
+    univ.Integer.typeId: IntegerEncoder(),
+    univ.BitString.typeId: BitStringEncoder(),
+    univ.OctetString.typeId: OctetStringEncoder(),
+    univ.Null.typeId: NullEncoder(),
+    univ.ObjectIdentifier.typeId: ObjectIdentifierEncoder(),
+    univ.Enumerated.typeId: IntegerEncoder(),
+    univ.Real.typeId: RealEncoder(),
+    # Sequence & Set have same tags as SequenceOf & SetOf
     univ.Set.typeId: SetEncoder(),
     univ.SetOf.typeId: SequenceOfEncoder(),
     univ.Sequence.typeId: SequenceEncoder(),
     univ.SequenceOf.typeId: SequenceOfEncoder(),
     univ.Choice.typeId: ChoiceEncoder(),
-    univ.Any.typeId: AnyEncoder()
+    univ.Any.typeId: AnyEncoder(),
+    # character string types
+    char.UTF8String.typeId: OctetStringEncoder(),
+    char.NumericString.typeId: OctetStringEncoder(),
+    char.PrintableString.typeId: OctetStringEncoder(),
+    char.TeletexString.typeId: OctetStringEncoder(),
+    char.VideotexString.typeId: OctetStringEncoder(),
+    char.IA5String.typeId: OctetStringEncoder(),
+    char.GraphicString.typeId: OctetStringEncoder(),
+    char.VisibleString.typeId: OctetStringEncoder(),
+    char.GeneralString.typeId: OctetStringEncoder(),
+    char.UniversalString.typeId: OctetStringEncoder(),
+    char.BMPString.typeId: OctetStringEncoder(),
+    # useful types
+    useful.ObjectDescriptor.typeId: OctetStringEncoder(),
+    useful.GeneralizedTime.typeId: OctetStringEncoder(),
+    useful.UTCTime.typeId: OctetStringEncoder()
 }
 
 
@@ -207,6 +238,18 @@ class Encoder(object):
 #:
 #: Raises
 #: ------
-#: : :py:class:`pyasn1.error.PyAsn1Error`
+#: :py:class:`~pyasn1.error.PyAsn1Error`
 #:     On encoding errors
+#:
+#: Examples
+#: --------
+#: Encode ASN.1 value object into native Python types
+#:
+#: .. code-block:: pycon
+#:
+#:    >>> seq = SequenceOf(componentType=Integer())
+#:    >>> seq.extend([1, 2, 3])
+#:    >>> encode(seq)
+#:    [1, 2, 3]
+#:
 encode = Encoder(tagMap, typeMap)
