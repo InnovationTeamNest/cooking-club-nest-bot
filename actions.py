@@ -180,8 +180,7 @@ def dictionary_search(bot, update, name):
             bot.send_message(chat_id=update.message.chat_id,
                              text="Persona non trovata.")
         elif 0 < found < MAX_MESSAGES:
-            for search_result in range(0, len(results)):
-                bot.send_message(chat_id=update.message.chat_id, text=results)
+            bot.send_message(chat_id=update.message.chat_id, text=results)
         else:
             bot.send_message(chat_id=update.message.chat_id,
                              text="Troppi risultati trovati (" + str(found) +
