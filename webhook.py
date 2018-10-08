@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import json
 import logging as log
 import time
@@ -6,8 +8,6 @@ import telegram
 import webapp2
 from telegram.ext import Dispatcher, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 
-import actions
-import turn_actions
 from secrets import url, ccn_bot_token
 
 ccn_bot = telegram.Bot(ccn_bot_token)
@@ -33,6 +33,9 @@ class UpdateHandler(webapp2.RequestHandler):
 # Ogni comando necessita di un CommandHandler appropriato,
 # che prende in ingresso un metodo con due parametri, bot e update
 def dispatcher_setup():
+    import actions
+    import turn_actions
+
     global dispatcher
     dispatcher = Dispatcher(bot=ccn_bot, update_queue=None, workers=0)
 

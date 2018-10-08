@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 import logging as log
 
@@ -172,7 +173,7 @@ def dictionary_search(bot, update, name):
 
         for number, person in groups.iteritems():  # groups.items()  (Python 3)
             for search_result in person:
-                if name.encode('ascii') in search_result:
+                if name in search_result:
                     results += "\n" + search_result + " si trova nel gruppo " + str(number)
                     found += 1
         # E' necessario gestire sia zero persone che troppe (20+) in questo caso

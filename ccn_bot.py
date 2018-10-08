@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 import datetime
 import logging as log
-import time  # TODO Merge datetime and time and move offset to google_calendar.py
+import time
 
 import google.appengine.ext.ndb as ndb
 import telegram
@@ -18,7 +19,7 @@ MAX_GROUPS = 22
 
 
 def check_turn(counter=0):
-    today = time.strftime("%d/%m/%Y")
+    today = time.strftime(str("%d/%m/%Y"))
 
     try:
         res = day_already_checked(today)
@@ -31,9 +32,9 @@ def check_turn(counter=0):
         log.error(ex.message)
         return
 
-    log.info("Checking turn for day " + today + " at " +
-             str(time.strftime("%c")))
+    log.info("Checking turn for day " + today + " at " + str(time.strftime(str("%c"))))
     assigned_group = fetch_turn_calendar(datetime.date.today(), counter)
+
     try:
         log.info("Today's turn: " + assigned_group)
         send_notification(today, assigned_group)
@@ -104,7 +105,6 @@ def weekly_notification(date):
         for i in range(0, 7):
             date = date + datetime.timedelta(days=1)
             assigned_group = fetch_turn_calendar(date, 0)
-            print assigned_group
             try:
                 if assigned_group is None:
                     message_temp = "\n" + \
@@ -120,7 +120,7 @@ def weekly_notification(date):
                           "No notification for today... What a pity!")
                 log.error(ex.message)
         sent_message = ccn_bot.send_message(group_chat_id, message)
-        ccn_bot.pinChatMessage(group_chat_id, sent_message.message_id)
+        ccn_bot.pin_chat_message(group_chat_id, sent_message.message_id)
     except Exception as ex:
         log.error("Unable to send Telegram notification. No notification for "
                   "today... What a pity!")
@@ -128,25 +128,24 @@ def weekly_notification(date):
 
 
 def translate_date(date):
-    res = ""
-
     if date.strftime("%A") == "Monday":
-        res += "Lunedi"
+        res = "Lunedi"
     elif date.strftime("%A") == "Tuesday":
-        res += "Martedi"
+        res = "Martedi"
     elif date.strftime("%A") == "Wednesday":
-        res += "Mercoledi"
+        res = "Mercoledi"
     elif date.strftime("%A") == "Thursday":
-        res += "Giovedi"
+        res = "Giovedi"
     elif date.strftime("%A") == "Friday":
-        res += "Venerdi"
+        res = "Venerdi"
     elif date.strftime("%A") == "Saturday":
-        res += "Sabato"
+        res = "Sabato"
     elif date.strftime("%A") == "Sunday":
-        res += "Domenica"
+        res = "Domenica"
+    else:
+        res = ""
 
-    res = res + " " + date.strftime("%d").lstrip("0") + "/" \
-          + date.strftime("%m").lstrip("0")
+    res = res + " " + date.strftime("%d").lstrip("0") + "/" + date.strftime("%m").lstrip("0")
 
     return res
 
