@@ -6,7 +6,7 @@ import logging as log
 from telegram import ChatAction
 
 from ccn_bot import MAX_MESSAGES, MAX_GROUPS
-from secrets import groups, direttivoid
+from secrets import groups, direttivoid, direttivo_names
 
 
 class ReplyStatus:  # Classe ausilaria, un quick fix per gestire tutti i tipi di risposte dei metodi
@@ -70,7 +70,7 @@ def info(bot, update):
                               " 2017. Il bot è stato ideato da Gianvito Taneburgo, ora non più al Nest. Al momento" +
                               " il bot è mantenuto da Matteo Franzil, se serve aiuto conttattalo su @mfranzil.")
         bot.send_message(chat_id=update.message.chat_id,
-                         text="Membri del Direttivo:\n\nMatteo Franzil, Matteo Marra.")
+                         text="Membri del Direttivo:\n\n" + direttivo_names)
     except Exception as ex:
         log.error("Unable to send Telegram message!\n" + ex.message)
 
