@@ -25,12 +25,12 @@ def check_turn(counter=0):
         res = day_already_checked(today)
         log.info("Already checked? " + repr(res))
         if res:
-            return
+            return "200"
     except Exception as ex:
         log.error("Unable to fetch data from Datastore... No notification "
                   "for today... What a pity!")
         log.error(ex.message)
-        return
+        return "424"
 
     log.info("Checking turn for day " + today + " at " + str(time.strftime(str("%c"))))
     assigned_group = fetch_turn_calendar(datetime.date.today(), counter)
@@ -42,6 +42,9 @@ def check_turn(counter=0):
         log.error("Unable to fetch data from Google Calendar... "
                   "No notification for today... What a pity!")
         log.error(ex.message)
+        return "424"
+
+    return "200"
 
 
 def fetch_turn_calendar(date, counter):

@@ -3,7 +3,10 @@ api_version: 1
 threadsafe: yes
 
 handlers:
-- url: .*
+- url: /scripts/.*
+  script: main.app
+  login: admin
+- url: /.*
   script: main.app
 
 libraries:

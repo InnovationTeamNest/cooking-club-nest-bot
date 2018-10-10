@@ -18,9 +18,10 @@ class MainHandler(webapp2.RequestHandler):
 class TurnHandler(webapp2.RequestHandler):
     def get(self):
         start_time = timer()
-        ccn_bot.check_turn()
+        code = ccn_bot.check_turn()
+        self.response.set_status(int(code))
         self.response.write("Request completed in " +
-                            str((timer() - start_time)) + " seconds.")
+                            str((timer() - start_time)) + " seconds.\nHTTP Code: " + code)
 
 
 class WeeklyHandler(webapp2.RequestHandler):
@@ -33,8 +34,8 @@ class WeeklyHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
-    ('/turn', TurnHandler),
-    ('/set_webhook', WebHookHandler),
-    ('/weekly', WeeklyHandler),
+    ('/scripts/turn', TurnHandler),
+    ('/scripts/set_webhook', WebHookHandler),
+    ('/scripts/weekly', WeeklyHandler),
     ('/' + ccn_bot.ccn_bot_token, UpdateHandler)
 ], debug=True)
