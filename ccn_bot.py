@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 import datetime
 import logging as log
 import time
 
-import google.appengine.ext.ndb as ndb
 import telegram
+from google.cloud import datastore
 
 from google_calendar import get_assigned_people
 from secrets import ccn_bot_token, group_chat_id, groups
@@ -25,12 +24,12 @@ def check_turn(counter=0):
         res = day_already_checked(today)
         log.info("Already checked? " + repr(res))
         if res:
-            return "200"
+            return 200
     except Exception as ex:
         log.error("Unable to fetch data from Datastore... No notification "
                   "for today... What a pity!")
-        log.error(ex.message)
-        return "424"
+        log.error(ex)
+        return 424
 
     log.info("Checking turn for day " + today + " at " + str(time.strftime(str("%c"))))
     assigned_group = fetch_turn_calendar(datetime.date.today(), counter)
@@ -41,10 +40,10 @@ def check_turn(counter=0):
     except Exception as ex:
         log.error("Unable to fetch data from Google Calendar... "
                   "No notification for today... What a pity!")
-        log.error(ex.message)
-        return "424"
+        log.error(ex)
+        return 424
 
-    return "200"
+    return 200
 
 
 def fetch_turn_calendar(date, counter):
@@ -57,20 +56,23 @@ def fetch_turn_calendar(date, counter):
         if counter < MAX_ATTEMPTS:
             time.sleep(2 ** counter)
             fetch_turn_calendar(date, counter + 1)
-        log.error(ex.message)
+        log.error(ex)
         return
     return assigned_group
 
 
-# this Datastore class is required to keep track of processed days
-class CheckedDay(ndb.Model):
-    day = ndb.StringProperty(indexed=False)
-    people = ndb.StringProperty(indexed=False)
-    date = ndb.DateTimeProperty(auto_now_add=True)
+def push_data(date, assigned_group):
+    client = datastore.Client()
+    key = client.key('CheckedDay', date)
+    entity = datastore.Entity(key=key)
+    entity['day'] = date
+    entity['people'] = assigned_group
+    client.put(entity)
 
 
 def day_already_checked(date):
-    return ndb.Key('CheckedDay', date).get()
+    client = datastore.Client()
+    return client.get(client.key('CheckedDay', date))
 
 
 def send_notification(date, assigned_group, counter=0):
@@ -91,11 +93,11 @@ def send_notification(date, assigned_group, counter=0):
             sent_message = ccn_bot.sendMessage(group_chat_id, message)
             ccn_bot.pinChatMessage(group_chat_id, sent_message.message_id)
         # the date can be considered processed in any case
-        CheckedDay(id=date, day=date, people=assigned_group).put()
+        push_data(date, assigned_group)
     except Exception as ex:
         log.error("Unable to send Telegram notification. No notification for "
                   "today... What a pity!")
-        log.error(ex.message)
+        log.error(ex)
         if counter < MAX_ATTEMPTS:
             time.sleep(2 ** counter)
             send_notification(date, assigned_group, counter + 1)
@@ -121,13 +123,13 @@ def weekly_notification(date):
             except Exception as ex:
                 log.error("Unable to fetch data from Google Calendar... "
                           "No notification for today... What a pity!")
-                log.error(ex.message)
+                log.error(ex)
         sent_message = ccn_bot.send_message(group_chat_id, message)
         ccn_bot.pin_chat_message(group_chat_id, sent_message.message_id)
     except Exception as ex:
         log.error("Unable to send Telegram notification. No notification for "
                   "today... What a pity!")
-        log.error(ex.message)
+        log.error(ex)
 
 
 def translate_date(date):
@@ -151,11 +153,3 @@ def translate_date(date):
     res = res + " " + date.strftime("%d").lstrip("0") + "/" + date.strftime("%m").lstrip("0")
 
     return res
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()

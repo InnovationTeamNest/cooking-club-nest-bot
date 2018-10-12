@@ -1,33 +1,14 @@
-from __future__ import unicode_literals
-
-import json
 import logging as log
 import time
 
 import telegram
-import webapp2
 from telegram.ext import Dispatcher, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 
 from secrets import url, ccn_bot_token
 
-ccn_bot = telegram.Bot(ccn_bot_token)
+bot = telegram.Bot(ccn_bot_token)
 
 MAX_ATTEMPTS = 5
-
-
-class WebHookHandler(webapp2.RequestHandler):
-    def get(self):
-        dispatcher_setup()  # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
-        res = ccn_bot.setWebhook(url + ccn_bot_token)
-        if res:
-            self.response.write("Success!")
-        else:
-            self.response.write("Webhook setup failed...")
-
-
-class UpdateHandler(webapp2.RequestHandler):
-    def post(self):  # Gli update vengono forniti da telegram in Json e vanno interpretati
-        webhook(telegram.Update.de_json(json.loads(self.request.body), ccn_bot), 0)
 
 
 # Ogni comando necessita di un CommandHandler appropriato,
@@ -37,7 +18,7 @@ def dispatcher_setup():
     import turn_actions
 
     global dispatcher
-    dispatcher = Dispatcher(bot=ccn_bot, update_queue=None, workers=0)
+    dispatcher = Dispatcher(bot=bot, update_queue=None, workers=0)
 
     dispatcher.add_handler(CommandHandler("start", actions.start))
     dispatcher.add_handler(CommandHandler("help", actions.help))
@@ -59,9 +40,12 @@ def webhook(update, counter):
         dispatcher.process_update(update)
     except Exception as ex:
         dispatcher_setup()
-        ccn_bot.setWebhook(url + ccn_bot_token)
+        bot.setWebhook(url + ccn_bot_token)
         if counter < MAX_ATTEMPTS:
             time.sleep(2 ** counter)
             webhook(update, counter + 1)
         else:
-            log.critical("Failed to initialize Webhook instance" + ex.message)
+            log.critical("Failed to initialize Webhook instance")
+            log.critical(ex)
+            return "Failure", 500
+    return "Success", 200

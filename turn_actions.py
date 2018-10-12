@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import datetime
 import logging as log
 
 from telegram import ReplyKeyboardRemove, ChatAction
 
 from ccn_bot import fetch_turn_calendar, MAX_ATTEMPTS, MAX_GROUPS
-from lib.telegramcalendar import telegramcalendar
+from telegramcalendar import telegramcalendar
 from secrets import groups
 
 
@@ -29,7 +27,7 @@ def turn(bot, day, chat_id):
             bot.send_message(chat_id=chat_id,
                              text="Nessun turno previsto per " + day_to_string(day, False))
     except Exception as ex:
-        log.error("Unable to send Telegram message!\n" + ex.message)
+        log.error("Unable to send Telegram message!\n")
 
 
 def turn_keyboard(bot, update):
@@ -38,7 +36,7 @@ def turn_keyboard(bot, update):
                          text="Scegli una data:",
                          reply_markup=telegramcalendar.create_calendar())
     except Exception as ex:
-        log.error(ex.message)
+        log.error(ex)
 
 
 def inline_handler(bot, update):  # TODO Expand inline functionality
@@ -52,7 +50,7 @@ def inline_handler(bot, update):  # TODO Expand inline functionality
             temp_message.delete()
             turn(bot, date, update.callback_query.from_user.id)
     except Exception as ex:
-        log.error(ex.message)
+        log.error(ex)
 
 
 def today_turn(bot, update):

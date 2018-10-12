@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 import logging as log
 
@@ -46,7 +45,7 @@ def start(bot, update):
                               + ". Per iniziare scrivi un comando o scrivi /help per aiuto.\nOgni altra richiesta "
                                 "verrà ignorata.")
     except Exception as ex:
-        log.error("Unable to send Telegram message!\n" + ex.message)
+        log.error("Unable to send Telegram message!\n")
 
 
 def help(bot, update):
@@ -60,7 +59,7 @@ def help(bot, update):
                               "\n/cerca <Persona> - Cerca una persona tra i gruppi" +
                               "\n/direttivo - Conttatta il Direttivo del Cooking Corner")
     except Exception as ex:
-        log.error("Unable to send Telegram message!\n" + ex.message)
+        log.error("Unable to send Telegram message!\n")
 
 
 def info(bot, update):
@@ -72,7 +71,8 @@ def info(bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text="Membri del Direttivo:\n\n" + direttivo_names)
     except Exception as ex:
-        log.error("Unable to send Telegram message!\n" + ex.message)
+        log.error("Unable to send Telegram message!\n")
+        log.error(ex)
 
 
 # Metodi che supportano le risposte dirette in chat
@@ -86,7 +86,7 @@ def direttivo(bot, update):
                               "al Direttivo. Segnalazioni, suggerimenti sono ben accetti. " +
                               "Eventuali abusi saranno puniti con un richiamo.\n")
     except Exception as ex:
-        log.error(ex.message)
+        log.error(ex)
     ReplyStatus.direttivoresponse = True
 
 
@@ -106,7 +106,7 @@ def group(bot, update, args):
                          text="Inserisci un numero da 1 a " + str(
                              MAX_GROUPS) + " per ottenere informazioni sul gruppo.")
         ReplyStatus.groupresponse = True
-        log.error(ex.message)
+        log.error(ex)
 
 
 def search(bot, update, args):
@@ -118,11 +118,10 @@ def search(bot, update, args):
         bot.send_message(chat_id=update.message.chat_id,
                          text="Inserisci il nome (anche in parte) della persona di cui vuoi sapere il gruppo.")
         ReplyStatus.searchresponse = True
-        log.error(ex.message)
+        log.error(ex)
 
 
 # Metodi che gestiscono le rispettive risposte
-
 def response_direttivo(bot, update):
     try:
         user = update.message.from_user
@@ -134,7 +133,7 @@ def response_direttivo(bot, update):
                 user.last_name) + " scrive:\n\n" + update.message.text)
         bot.send_message(chat_id=update.message.chat_id, text="Messaggio inviato con successo.")
     except Exception as ex:
-        log.error(ex.message)
+        log.error(ex)
     ReplyStatus.direttivoresponse = False
 
 
@@ -148,7 +147,7 @@ def response_group(bot, update):
     except Exception as ex:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Qualcosa è andato storto. Riprova più tardi.")
-        log.error(ex.message)
+        log.error(ex)
     ReplyStatus.groupresponse = False
 
 
@@ -158,7 +157,7 @@ def response_search(bot, update):
     except Exception as ex:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Qualcosa è andato storto. Riprova più tardi.")
-        log.error(ex.message + " from method responseSearch")
+        log.error(ex)
     ReplyStatus.searchresponse = False
 
 
@@ -188,4 +187,4 @@ def dictionary_search(bot, update, name):
                                   "+), prova con un parametro più restrittivo.")
     except Exception as ex:
         bot.send_message(chat_id=update.message.chat_id, text="Errore! Parametro di ricerca non valido.")
-        log.error(ex.message + "from method dictionarySearch")
+        log.error(ex)
