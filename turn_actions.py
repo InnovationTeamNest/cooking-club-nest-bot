@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import datetime
-import logging as log
+import sys
 
 from telegram import ReplyKeyboardRemove, ChatAction
 
 from ccn_bot import fetch_turn_calendar, MAX_ATTEMPTS, MAX_GROUPS
-from telegramcalendar import telegramcalendar
 from secrets import groups
+from telegramcalendar import telegramcalendar
 
 
 # Metodi di gestione dei turni
@@ -27,7 +27,7 @@ def turn(bot, day, chat_id):
             bot.send_message(chat_id=chat_id,
                              text="Nessun turno previsto per " + day_to_string(day, False))
     except Exception as ex:
-        log.error("Unable to send Telegram message!\n")
+        print("Unable to send Telegram message!\n", file=sys.stderr)
 
 
 def turn_keyboard(bot, update):
@@ -36,7 +36,7 @@ def turn_keyboard(bot, update):
                          text="Scegli una data:",
                          reply_markup=telegramcalendar.create_calendar())
     except Exception as ex:
-        log.error(ex)
+        print(ex, file=sys.stderr)
 
 
 def inline_handler(bot, update):  # TODO Expand inline functionality
@@ -50,7 +50,7 @@ def inline_handler(bot, update):  # TODO Expand inline functionality
             temp_message.delete()
             turn(bot, date, update.callback_query.from_user.id)
     except Exception as ex:
-        log.error(ex)
+        print(ex, file=sys.stderr)
 
 
 def today_turn(bot, update):
@@ -74,7 +74,7 @@ def day_to_string(date, phrase):
         elif date.day == tomorrow.day:
             message = "Domani sarà"
         else:
-            log.error(str(today.day) + " " + str(date.day))
+            print(str(today.day) + " " + str(date.day), file=sys.stderr)
             message = "Il " + date.strftime("%d/%m/%Y") + " è"
     else:
         if date.day == today.day:

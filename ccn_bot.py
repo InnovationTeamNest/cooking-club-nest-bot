@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import logging as log
+import sys
 import time
 
 import telegram
@@ -22,25 +22,25 @@ def check_turn(counter=0):
 
     try:
         res = day_already_checked(today)
-        log.info("Already checked? " + repr(res))
+        print("Already checked? " + repr(res), file=sys.stderr)
         if res:
             return 200
     except Exception as ex:
-        log.error("Unable to fetch data from Datastore... No notification "
-                  "for today... What a pity!")
-        log.error(ex)
+        print("Unable to fetch data from Datastore... No notification "
+              "for today... What a pity!", file=sys.stderr)
+        print(ex, file=sys.stderr)
         return 424
 
-    log.info("Checking turn for day " + today + " at " + str(time.strftime(str("%c"))))
+    print("Checking turn for day " + today + " at " + str(time.strftime(str("%c"))), file=sys.stderr)
     assigned_group = fetch_turn_calendar(datetime.date.today(), counter)
 
     try:
-        log.info("Today's turn: " + assigned_group)
+        print("Today's turn: " + assigned_group, file=sys.stderr)
         send_notification(today, assigned_group)
     except Exception as ex:
-        log.error("Unable to fetch data from Google Calendar... "
-                  "No notification for today... What a pity!")
-        log.error(ex)
+        print("Unable to fetch data from Google Calendar... "
+              "No notification for today... What a pity!", file=sys.stderr)
+        print(ex, file=sys.stderr)
         return 424
 
     return 200
@@ -51,12 +51,12 @@ def fetch_turn_calendar(date, counter):
         offset = date.day - datetime.date.today().day
         assigned_group = get_assigned_people(offset)
     except Exception as ex:
-        log.error("Unable to fetch data from Google Calendar... "
-                  "No notification for today... What a pity!")
+        print("Unable to fetch data from Google Calendar... "
+              "No notification for today... What a pity!", file=sys.stderr)
         if counter < MAX_ATTEMPTS:
             time.sleep(2 ** counter)
             fetch_turn_calendar(date, counter + 1)
-        log.error(ex)
+        print(ex, file=sys.stderr)
         return
     return assigned_group
 
@@ -95,9 +95,9 @@ def send_notification(date, assigned_group, counter=0):
         # the date can be considered processed in any case
         push_data(date, assigned_group)
     except Exception as ex:
-        log.error("Unable to send Telegram notification. No notification for "
-                  "today... What a pity!")
-        log.error(ex)
+        print("Unable to send Telegram notification. No notification for "
+              "today... What a pity!", file=sys.stderr)
+        print(ex, file=sys.stderr)
         if counter < MAX_ATTEMPTS:
             time.sleep(2 ** counter)
             send_notification(date, assigned_group, counter + 1)
@@ -121,15 +121,15 @@ def weekly_notification(date):
                                    ", ".join(people)
                 message = str(message) + str(message_temp)
             except Exception as ex:
-                log.error("Unable to fetch data from Google Calendar... "
-                          "No notification for today... What a pity!")
-                log.error(ex)
+                print("Unable to fetch data from Google Calendar... "
+                      "No notification for today... What a pity!", file=sys.stderr)
+                print(ex, file=sys.stderr)
         sent_message = ccn_bot.send_message(group_chat_id, message)
         ccn_bot.pin_chat_message(group_chat_id, sent_message.message_id)
     except Exception as ex:
-        log.error("Unable to send Telegram notification. No notification for "
-                  "today... What a pity!")
-        log.error(ex)
+        print("Unable to send Telegram notification. No notification for "
+              "today... What a pity!", file=sys.stderr)
+        print(ex, file=sys.stderr)
 
 
 def translate_date(date):

@@ -18,27 +18,36 @@ def index():
 
 @app.route('/turn', methods=['GET'])
 def turn():
-    start_time = timer()
-    code = ccn_bot.check_turn()
-    return "Request completed in " + str((timer() - start_time)) + " seconds.", code
+    if request.headers['X-Appengine-Cron']:
+        start_time = timer()
+        code = ccn_bot.check_turn()
+        return "Request completed in " + str((timer() - start_time)) + " seconds.", code
+    else:
+        return "Access Denied", 403
 
 
 @app.route('/weekly', methods=['GET'])
 def weekly():
-    start_time = timer()
-    ccn_bot.weekly_notification(datetime.date.today())
-    return "Request completed in " + str((timer() - start_time)) + " seconds.", 200
+    if request.headers['X-Appengine-Cron']:
+        start_time = timer()
+        ccn_bot.weekly_notification(datetime.date.today())
+        return "Request completed in " + str((timer() - start_time)) + " seconds.", 200
+    else:
+        return "Access Denied", 403
 
 
 @app.route('/set_webhook', methods=['GET'])
 def wb():
-    from webhook import dispatcher_setup, bot
-    dispatcher_setup()  # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
-    res = bot.setWebhook(url + ccn_bot_token)
-    if res:
-        return "Success!", 200
+    if request.headers['X-Appengine-Cron']:
+        from webhook import dispatcher_setup, bot
+        dispatcher_setup()  # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
+        res = bot.setWebhook(url + ccn_bot_token)
+        if res:
+            return "Success!", 200
+        else:
+            return "Webhook setup failed...", 500
     else:
-        return "Webhook setup failed...", 500
+        return "Access Denied", 403
 
 
 @app.route('/' + ccn_bot.ccn_bot_token, methods=['POST'])

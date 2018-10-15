@@ -1,4 +1,5 @@
 import logging as log
+import sys
 import time
 
 import telegram
@@ -45,7 +46,7 @@ def webhook(update, counter):
             time.sleep(2 ** counter)
             webhook(update, counter + 1)
         else:
-            log.critical("Failed to initialize Webhook instance")
-            log.critical(ex)
+            log.critical("Failed to initialize Webhook instance", file=sys.stderr)
+            log.critical(ex, file=sys.stderr)
             return "Failure", 500
     return "Success", 200
