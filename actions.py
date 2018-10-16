@@ -170,7 +170,7 @@ def dictionary_search(bot, update, name):
         results = ""
         bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
 
-        for number, person in groups.iteritems():  # groups.items()  (Python 3)
+        for number, person in groups.items():
             for search_result in person:
                 if name.lower() in search_result.lower():
                     results += "\n" + search_result + " si trova nel gruppo " + str(number)

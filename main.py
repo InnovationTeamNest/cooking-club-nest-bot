@@ -18,7 +18,7 @@ def index():
 
 @app.route('/turn', methods=['GET'])
 def turn():
-    if request.headers['X-Appengine-Cron']:
+    if 'X-Appengine-Cron' in request.headers:
         start_time = timer()
         code = ccn_bot.check_turn()
         return "Request completed in " + str((timer() - start_time)) + " seconds.", code
@@ -28,7 +28,7 @@ def turn():
 
 @app.route('/weekly', methods=['GET'])
 def weekly():
-    if request.headers['X-Appengine-Cron']:
+    if 'X-Appengine-Cron' in request.headers:
         start_time = timer()
         ccn_bot.weekly_notification(datetime.date.today())
         return "Request completed in " + str((timer() - start_time)) + " seconds.", 200
@@ -38,7 +38,7 @@ def weekly():
 
 @app.route('/set_webhook', methods=['GET'])
 def wb():
-    if request.headers['X-Appengine-Cron']:
+    if 'X-Appengine-Cron' in request.headers:
         from webhook import dispatcher_setup, bot
         dispatcher_setup()  # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
         res = bot.setWebhook(url + ccn_bot_token)
