@@ -58,7 +58,7 @@ def help(bot, update):
                               "\n/domani - Mostra il turno di domani"
                               "\n/gruppo <#> - Mostra i membri di un certo gruppo"
                               "\n/cerca <Persona> - Cerca una persona tra i gruppi"
-                              "\n/direttivo - Conttatta il Direttivo del Cooking Corner")
+                              "\n/direttivo - Contatta il Direttivo del Cooking Corner")
     except Exception as ex:
         log.info("Unable to send Telegram message!\n")
         log.info(ex)
