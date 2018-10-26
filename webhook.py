@@ -1,5 +1,4 @@
 import logging as log
-import sys
 import time
 
 import telegram
@@ -36,17 +35,18 @@ def dispatcher_setup():
     dispatcher.add_handler(CallbackQueryHandler(turn_actions.inline_handler))
 
 
-def webhook(update, counter):
+def process(update, counter=0):
     try:
         dispatcher.process_update(update)
-    except Exception as ex:
+    except NameError as ex:
         dispatcher_setup()
         bot.setWebhook(url + ccn_bot_token)
         if counter < MAX_ATTEMPTS:
             time.sleep(2 ** counter)
-            webhook(update, counter + 1)
+            process(update, counter + 1)
         else:
-            log.critical("Failed to initialize Webhook instance", file=sys.stderr)
-            log.critical(ex, file=sys.stderr)
-            return "Failure", 500
-    return "Success", 200
+            log.critical("Failed to initialize Webhook instance")
+            log.critical(ex)
+    except Exception as ex:
+        log.critical("An error has occurred while handling the update")
+        log.critical(ex)

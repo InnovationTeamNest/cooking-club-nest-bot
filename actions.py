@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import sys
+import logging as log
 
 from telegram import ChatAction
 
-from ccn_bot import MAX_MESSAGES, MAX_GROUPS
+from common import MAX_MESSAGES, MAX_GROUPS
 from secrets import groups, direttivoid, direttivo_names
 
 
@@ -45,34 +45,35 @@ def start(bot, update):
                               + ". Per iniziare scrivi un comando o scrivi /help per aiuto.\nOgni altra richiesta "
                                 "verrà ignorata.")
     except Exception as ex:
-        print("Unable to send Telegram message!\n", file=sys.stderr)
+        log.info("Unable to send Telegram message!\n")
+        log.info(ex)
 
 
 def help(bot, update):
     try:
         bot.send_message(chat_id=update.message.chat_id,
-                         text="/info - Ottieni informazioni sul bot e sul Direttivo del Cooking Corner" +
-                              "\n/turno - Cerca tra i turni del mese" +
-                              "\n/oggi - Mostra il turno di oggi" +
-                              "\n/domani - Mostra il turno di domani" +
-                              "\n/gruppo <#> - Mostra i membri di un certo gruppo" +
-                              "\n/cerca <Persona> - Cerca una persona tra i gruppi" +
+                         text="/info - Ottieni informazioni sul bot e sul Direttivo del Cooking Corner"
+                              "\n/turno - Cerca tra i turni del mese"
+                              "\n/oggi - Mostra il turno di oggi"
+                              "\n/domani - Mostra il turno di domani"
+                              "\n/gruppo <#> - Mostra i membri di un certo gruppo"
+                              "\n/cerca <Persona> - Cerca una persona tra i gruppi"
                               "\n/direttivo - Conttatta il Direttivo del Cooking Corner")
     except Exception as ex:
-        print("Unable to send Telegram message!\n", file=sys.stderr)
+        log.info("Unable to send Telegram message!\n")
+        log.info(ex)
 
 
 def info(bot, update):
     try:
         bot.send_message(chat_id=update.message.chat_id,
-                         text="Ciao! Questo bot è stato creato dal club Tech@Nest durante un Hackaton nel novembre" +
-                              " 2017. Il bot è stato ideato da Gianvito Taneburgo, ora non più al Nest. Al momento" +
-                              " il bot è mantenuto da Matteo Franzil, se serve aiuto conttattalo su @mfranzil.")
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Membri del Direttivo:\n\n" + direttivo_names)
+                         text=f"Ciao! Questo bot è stato creato dal club Tech@Nest durante un Hackaton nel novembre"
+                              f" 2017. Il bot è stato ideato da Gianvito Taneburgo, ora non più al Nest. Al momento"
+                              f" il bot è mantenuto da Matteo Franzil, se serve aiuto conttattalo su @mfranzil."
+                              f"\n\nMembri del Direttivo:\n\n{direttivo_names}")
     except Exception as ex:
-        print("Unable to send Telegram message!\n", file=sys.stderr)
-        print(ex, file=sys.stderr)
+        log.info("Unable to send Telegram message!\n")
+        log.info(ex)
 
 
 # Metodi che supportano le risposte dirette in chat
@@ -80,84 +81,61 @@ def info(bot, update):
 def direttivo(bot, update):
     ReplyStatus.allfalse()
     try:
-        chat_id = update.message.chat_id
-        bot.send_message(chat_id=chat_id,
-                         text="Rispondi a questo messaggio per recapitare un messaggio " +
-                              "al Direttivo. Segnalazioni, suggerimenti sono ben accetti. " +
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="Rispondi a questo messaggio per recapitare un messaggio "
+                              "al Direttivo. Segnalazioni, suggerimenti sono ben accetti. "
                               "Eventuali abusi saranno puniti con un richiamo.\n")
     except Exception as ex:
-        print(ex, file=sys.stderr)
+        log.info(ex)
     ReplyStatus.direttivoresponse = True
 
 
 def group(bot, update, args):
     ReplyStatus.allfalse()
     try:
-        args = args[0]
-        if str(args) in groups and int(args) <= MAX_GROUPS:
-            people = groups[str(args)]
-            message = "Il gruppo " + str(args) + " è formato da " + \
-                      ", ".join(people) + "."
-            bot.send_message(chat_id=update.message.chat_id, text=message)
+        args = str(args[0])
+        if args in groups and int(args) <= MAX_GROUPS:
+            people = groups[args]
+            message = f"Il gruppo {args} è formato da {', '.join(people)}."
         else:
-            bot.send_message(chat_id=update.message.chat_id, text="ID del gruppo non valido")
+            message = "ID del gruppo non valido"
     except Exception as ex:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Inserisci un numero da 1 a " + str(
-                             MAX_GROUPS) + " per ottenere informazioni sul gruppo.")
+        message = f"Inserisci un numero da 1 a {str(MAX_GROUPS)} per ottenere informazioni sul gruppo."
         ReplyStatus.groupresponse = True
-        print(ex, file=sys.stderr)
+        log.info(ex)
+    bot.send_message(chat_id=update.message.chat_id, text=message)
 
 
 def search(bot, update, args):
     ReplyStatus.allfalse()
     try:
-        args = args[0]
-        dictionary_search(bot, update, args)
+        dictionary_search(bot, update, args[0])
     except Exception as ex:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Inserisci il nome (anche in parte) della persona di cui vuoi sapere il gruppo.")
         ReplyStatus.searchresponse = True
-        print(ex, file=sys.stderr)
+        log.info(ex)
 
 
 # Metodi che gestiscono le rispettive risposte
 def response_direttivo(bot, update):
     try:
         user = update.message.from_user
-        if user.last_name is None:
-            bot.send_message(chat_id=direttivoid,
-                             text=str(user.first_name) + " scrive:\n\n" + update.message.text)
-        else:
-            bot.send_message(chat_id=direttivoid, text=str(user.first_name) + " " + str(
-                user.last_name) + " scrive:\n\n" + update.message.text)
+        name = f"{user.first_name} {user.last_name}" if user.last_name is None else user.first_name
+        bot.send_message(chat_id=direttivoid, text=f"{name} scrive:\n\n{update.message.text}")
         bot.send_message(chat_id=update.message.chat_id, text="Messaggio inviato con successo.")
     except Exception as ex:
-        print(ex, file=sys.stderr)
+        log.info(ex)
     ReplyStatus.direttivoresponse = False
 
 
 def response_group(bot, update):
-    try:
-        text = update.message.text
-        if text in groups:
-            group(bot, update, (text, 0))
-        else:
-            bot.send_message(chat_id=update.message.chat_id, text="ID del gruppo non valido")
-    except Exception as ex:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Qualcosa è andato storto. Riprova più tardi.")
-        print(ex, file=sys.stderr)
+    group(bot, update, (update.message.text, 0))
     ReplyStatus.groupresponse = False
 
 
 def response_search(bot, update):
-    try:
-        dictionary_search(bot, update, update.message.text)
-    except Exception as ex:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Qualcosa è andato storto. Riprova più tardi.")
-        print(ex, file=sys.stderr)
+    dictionary_search(bot, update, update.message.text)
     ReplyStatus.searchresponse = False
 
 
@@ -167,24 +145,23 @@ def response_search(bot, update):
 def dictionary_search(bot, update, name):
     try:
         found = 0
-        results = ""
+        results = []
         bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
 
         for number, person in groups.items():
             for search_result in person:
                 if name.lower() in search_result.lower():
-                    results += "\n" + search_result + " si trova nel gruppo " + str(number)
+                    results.append(f"\n{search_result} si trova nel gruppo {str(number)}")
                     found += 1
         # E' necessario gestire sia zero persone che troppe (20+) in questo caso
         if found == 0:
-            bot.send_message(chat_id=update.message.chat_id,
-                             text="Persona non trovata.")
+            text = "Persona non trovata."
         elif 0 < found < MAX_MESSAGES:
-            bot.send_message(chat_id=update.message.chat_id, text=results)
+            text = "".join(results)
         else:
-            bot.send_message(chat_id=update.message.chat_id,
-                             text="Troppi risultati trovati (" + str(found) +
-                                  "+), prova con un parametro più restrittivo.")
+            text = f"Troppi risultati trovati ({str(found)}+), prova con un parametro più restrittivo."
     except Exception as ex:
-        bot.send_message(chat_id=update.message.chat_id, text="Errore! Parametro di ricerca non valido.")
-        print(ex, file=sys.stderr)
+        text = "Errore! Parametro di ricerca non valido."
+        log.info(ex)
+
+    bot.send_message(chat_id=update.message.chat_id, text=text)
