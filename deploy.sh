@@ -2,7 +2,7 @@
 
 
 LV=`cat auto/last_version`
-PNAME=` cat project_name`
+PNAME=`cat project_name`
 
 echo "Select the version to deploy (last: $LV)"
 
@@ -18,7 +18,7 @@ echo "$version" > auto/last_version
 
 git add . && \
 git add -u && \
-git commit -m "$" && \
+git commit -m "$changelog" && \
 git push
 
 
