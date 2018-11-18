@@ -2,7 +2,7 @@
 
 
 LV=`cat auto/last_version`
-PNAME=`cat project_name`
+PNAME=`cat auto/project_name`
 
 echo "Select the version to deploy (last: $LV)"
 
