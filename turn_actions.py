@@ -18,7 +18,8 @@ def turn(bot, day, chat_id):
         if assigned_group:
             people = groups[assigned_group]
             if int(assigned_group) <= MAX_GROUPS:
-                message = f"{day_to_string(day, True)} il turno del gruppo {assigned_group} composto da " \
+                message = f"{day_to_string(day, True)} il turno del" \
+                          f" gruppo {assigned_group} composto da " \
                           f"{', '.join(people)}."
             else:
                 message = f"{day_to_string(day, True)} il turno di {', '.join(people)}" \
@@ -27,7 +28,7 @@ def turn(bot, day, chat_id):
             message = f"Nessun turno previsto per {day_to_string(day, False)}"
     except Exception as ex:
         log.info("An exception occurred!\n")
-        log.info(ex)
+        log.critical(ex)
         message = "Errore nel server. Riprova tra qualche minuto."
 
     bot.send_message(chat_id=chat_id, text=message)
@@ -39,7 +40,7 @@ def turn_keyboard(bot, update):
                          text="Scegli una data:",
                          reply_markup=create_calendar())
     except Exception as ex:
-        log.info(ex)
+        log.critical(ex)
 
 
 def inline_handler(bot, update):

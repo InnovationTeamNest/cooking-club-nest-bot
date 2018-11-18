@@ -7,9 +7,9 @@ import time
 import telegram
 from google.cloud import datastore
 
+from common import MAX_ATTEMPTS, translate_date
 from google_calendar import get_assigned_people
 from secrets import ccn_bot_token, group_chat_id, groups
-from common import MAX_ATTEMPTS
 
 ccn_bot = telegram.Bot(ccn_bot_token)
 
@@ -25,7 +25,7 @@ def check_turn(counter=0):
     except Exception as ex:
         log.info("Unable to fetch data from Datastore... No notification "
                  "for today... What a pity!")
-        log.info(ex)
+        log.critical(ex)
         return 424
 
     log.info(f"Checking turn for day {today} at {str(time.strftime(str('%c')))}")
@@ -37,7 +37,7 @@ def check_turn(counter=0):
     except Exception as ex:
         log.info("Unable to fetch data from Google Calendar... "
                  "No notification for today... What a pity!")
-        log.info(ex)
+        log.critical(ex)
         return 424
 
     return 200
@@ -53,7 +53,7 @@ def fetch_turn_calendar(date, counter):
         if counter < MAX_ATTEMPTS:
             time.sleep(2 ** counter)
             fetch_turn_calendar(date, counter + 1)
-        log.info(ex)
+        log.critical(ex)
         return
     return assigned_group
 
@@ -78,25 +78,41 @@ def send_notification(date, assigned_group, counter=0):
         # the group in this case.
         if assigned_group:
             people = groups[assigned_group]
-            # TODO Improve and add Easter egg...
 
             if int(assigned_group) < 100:
-                message = f"Salve! Oggi il turno di pulizie è del gruppo *{assigned_group}*," \
-                          f" composto da {', '.join(people)}.\n\nBuona fortuna! 👨🏻‍🍳"
+                if datetime.datetime.today().date() == datetime.date(2018, 11, 19):
+                    message = f"Buongiorno a tutti! Oggi dovranno pulire {', '.join(people)} " \
+                              f"del gruppo *{assigned_group}*, ma cosa più " \
+                              f"importante, è il mio compleanno!\n\n" \
+                              f"Buona pulizia a tutti! 🎉🥳"
+                else:
+                    message = f"Salve! Oggi il turno di pulizie è del gruppo *{assigned_group}*," \
+                              f" composto da {', '.join(people)}.\n\nBuona fortuna! 👨🏻‍🍳"
             else:
                 message = f"Salve! Oggi dovranno scontare il proprio richiamo {', '.join(people)}" \
                           f".\n\nBuona fortuna!"
-            sent_message = ccn_bot.send_message(chat_id=group_chat_id, text=message, parse_mode="Markdown")
+            sent_message = ccn_bot.send_message(chat_id=group_chat_id,
+                                                text=message,
+                                                parse_mode="Markdown")
             ccn_bot.pin_chat_message(group_chat_id, sent_message.message_id)
         # the date can be considered processed in any case
         push_data(date, assigned_group)
     except Exception as ex:
         log.info("Unable to send Telegram notification. No notification for "
                  "today... What a pity!")
-        log.info(ex)
+        log.critical(ex)
         if counter < MAX_ATTEMPTS:
             time.sleep(2 ** counter)
             send_notification(date, assigned_group, counter + 1)
+
+
+# phrases = [
+#     f"Salve! Oggi il turno di pulizie è del gruppo {group} composto da {people}.\n\nBuona fortuna! 👨🏻‍🍳",
+#     f"Buongiorno! La cucina dovrà essere pulita dal gruppo {group} oggi: {people}.\n\nBuona pulizia! 🧹",
+#     f"Buongiorno! L'ingrato compito della pulizia toccherà a {people}, del gruppo {group}.\n\nHave fun!",
+#     f"Buon weekend a tutti! Questo sabato dovranno pulire {people}, del gruppo {group}\n\nBuona fortuna! 👨🏻‍🍳",
+#     f""
+# ]
 
 
 def weekly_notification(date):
@@ -111,16 +127,18 @@ def weekly_notification(date):
                     message = f"\n{translate_date(date)} - Nessuno"
                 else:
                     people = groups[assigned_group]
-                    message = f"\n {translate_date(date)} - Gruppo {assigned_group}: " \
+                    message = f"\n{translate_date(date)} - Gruppo *{assigned_group}*: " \
                               f"{', '.join(people)}"
             except Exception as ex:
                 log.info("Unable to fetch data from Google Calendar... "
                          "No notification for today... What a pity!")
-                log.info(ex)
+                log.critical(ex)
 
-        sent_message = ccn_bot.send_message(chat_id=group_chat_id, text=f"{header} {message}")
+        sent_message = ccn_bot.send_message(chat_id=group_chat_id,
+                                            text=f"{header} {message}",
+                                            parse_mode="Markdown")
         ccn_bot.pin_chat_message(group_chat_id, sent_message.message_id)
     except Exception as ex:
         log.info("Unable to send Telegram notification. No notification for "
                  "today... What a pity!")
-        log.info(ex)
+        log.critical(ex)
