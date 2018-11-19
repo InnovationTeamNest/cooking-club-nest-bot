@@ -80,7 +80,8 @@ def send_notification(date, assigned_group, counter=0):
             people = groups[assigned_group]
 
             if int(assigned_group) < 100:
-                if datetime.datetime.today().date() == datetime.date(2018, 11, 19):
+                if datetime.datetime.today().month == 11 \
+                        and datetime.datetime.today().day == 19:
                     message = f"Buongiorno a tutti! Oggi dovranno pulire {', '.join(people)} " \
                               f"del gruppo *{assigned_group}*, ma cosa più " \
                               f"importante, è il mio compleanno!\n\n" \
@@ -122,20 +123,21 @@ def weekly_notification(date):
         for i in range(0, 7):
             date = date + datetime.timedelta(days=1)
             assigned_group = str(fetch_turn_calendar(date, 0))
+            message = []
             try:
                 if assigned_group is None:
-                    message = f"\n{translate_date(date)} - Nessuno"
+                    message.append(f"\n{translate_date(date)} - Nessuno")
                 else:
                     people = groups[assigned_group]
-                    message = f"\n{translate_date(date)} - Gruppo *{assigned_group}*: " \
-                              f"{', '.join(people)}"
+                    message.append(f"\n{translate_date(date)} - Gruppo *{assigned_group}*: "
+                                   f"{', '.join(people)}")
             except Exception as ex:
                 log.info("Unable to fetch data from Google Calendar... "
                          "No notification for today... What a pity!")
                 log.critical(ex)
 
         sent_message = ccn_bot.send_message(chat_id=group_chat_id,
-                                            text=f"{header} {message}",
+                                            text=f"{header} {''.join(message)}",
                                             parse_mode="Markdown")
         ccn_bot.pin_chat_message(group_chat_id, sent_message.message_id)
     except Exception as ex:
