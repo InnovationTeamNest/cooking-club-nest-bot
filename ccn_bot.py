@@ -3,13 +3,14 @@
 import datetime
 import logging as log
 import time
+import api
 
 import telegram
 from google.cloud import datastore
 
 from common import MAX_ATTEMPTS, translate_date
 from google_calendar import get_assigned_people
-from secrets import ccn_bot_token, group_chat_id, groups
+from secrets import ccn_bot_token, group_chat_id
 
 ccn_bot = telegram.Bot(ccn_bot_token)
 
@@ -77,7 +78,7 @@ def send_notification(date, assigned_group, counter=0):
         # there could be days with no turn. It is useless to send a message to
         # the group in this case.
         if assigned_group:
-            people = groups[assigned_group]
+            people = api.get_group(assigned_group)
 
             if int(assigned_group) < 100:
                 if datetime.datetime.today().month == 11 \
@@ -127,7 +128,7 @@ def weekly_notification(date):
                 if assigned_group is None:
                     message.append(f"\n{translate_date(date)} - Nessuno")
                 else:
-                    people = groups[assigned_group]
+                    people = api.get_group(assigned_group)
                     message.append(f"\n{translate_date(date)} - Gruppo *{assigned_group}*: {', '.join(people)}")
             except Exception as ex:
                 log.error("Unable to fetch data from Google Calendar... "
@@ -141,33 +142,3 @@ def weekly_notification(date):
         log.error("Unable to send Telegram notification. No notification for "
                   "today... What a pity!")
         log.error(ex)
-
-
-# def weekly_notification(date):
-#     try:
-#         header = "Salve! Questa settimana toccherà ai seguenti gruppi: "
-#         date = date - datetime.timedelta(days=1)
-#         for i in range(0, 7):
-#             date = date + datetime.timedelta(days=1)
-#             assigned_group = str(fetch_turn_calendar(date, 0))
-#             message = []
-#             try:
-#                 if assigned_group is None:
-#                     message.append(f"\n{translate_date(date)} - Nessuno")
-#                 else:
-#                     people = groups[assigned_group]
-#                     message.append(f"\n{translate_date(date)} - Gruppo *{assigned_group}*: "
-#                                    f"{', '.join(people)}")
-#             except Exception as ex:
-#                 log.info("Unable to fetch data from Google Calendar... "
-#                          "No notification for today... What a pity!")
-#                 log.critical(ex)
-#
-#         sent_message = ccn_bot.send_message(chat_id=group_chat_id,
-#                                             text=f"{header} {''.join(message)}",
-#                                             parse_mode="Markdown")
-#         ccn_bot.pin_chat_message(group_chat_id, sent_message.message_id)
-#     except Exception as ex:
-#         log.info("Unable to send Telegram notification. No notification for "
-#                  "today... What a pity!")
-#         log.critical(ex)

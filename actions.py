@@ -4,8 +4,9 @@ import logging as log
 
 from telegram import ChatAction
 
+import api
 from common import MAX_MESSAGES, MAX_GROUPS
-from secrets import groups, direttivoid, direttivo_names
+from secrets import direttivo_names, direttivo_id
 
 
 class ReplyStatus:  # Classe ausilaria, un quick fix per gestire tutti i tipi di risposte dei metodi
@@ -94,8 +95,8 @@ def group(bot, update, args):
     ReplyStatus.allfalse()
     try:
         args = str(args[0])
-        if args in groups and int(args) <= MAX_GROUPS:
-            people = groups[args]
+        if args in api.get_group_numbers() and int(args) <= MAX_GROUPS:
+            people = api.get_group(args)
             message = f"Il gruppo {args} è formato da {', '.join(people)}."
         else:
             message = "ID del gruppo non valido"
@@ -122,7 +123,7 @@ def response_direttivo(bot, update):
     try:
         user = update.message.from_user
         name = f"{user.first_name} {user.last_name}" if user.last_name is None else user.first_name
-        bot.send_message(chat_id=direttivoid, text=f"{name} scrive:\n\n{update.message.text}")
+        bot.send_message(chat_id=direttivo_id, text=f"{name} scrive:\n\n{update.message.text}")
         bot.send_message(chat_id=update.message.chat_id, text="Messaggio inviato con successo.")
     except Exception as ex:
         log.critical(ex)
@@ -148,10 +149,10 @@ def dictionary_search(bot, update, name):
         results = []
         bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
 
-        for number, person in groups.items():
-            for search_result in person:
-                if name.lower() in search_result.lower():
-                    results.append(f"\n{search_result} si trova nel gruppo {str(number)}")
+        for number, group_members in api.get_number_members_tuple():
+            for member in group_members:
+                if name.lower() in member.lower():
+                    results.append(f"\n{member} si trova nel gruppo {str(number)}")
                     found += 1
         # E' necessario gestire sia zero persone che troppe (20+) in questo caso
         if found == 0:

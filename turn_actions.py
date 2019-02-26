@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import datetime
 import logging as log
+import api
 
 from telegram import ReplyKeyboardRemove, ChatAction
 
 from ccn_bot import fetch_turn_calendar
 from common import MAX_GROUPS, MAX_ATTEMPTS, day_to_string
-from secrets import groups
 from telegramcalendar import create_calendar, process_calendar_selection
 
 
@@ -16,7 +16,7 @@ def turn(bot, day, chat_id):
     assigned_group = fetch_turn_calendar(day, MAX_ATTEMPTS)
     try:
         if assigned_group:
-            people = groups[assigned_group]
+            people = api.get_group(assigned_group)
             if int(assigned_group) <= MAX_GROUPS:
                 message = f"{day_to_string(day, True)} il turno del" \
                           f" gruppo {assigned_group} composto da " \
