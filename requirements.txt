@@ -20,7 +20,7 @@ grpcio==1.15.0
 httplib2==0.11.3
 idna==2.7
 itsdangerous==0.24
-Jinja2==2.10
+Jinja2==2.10.1
 MarkupSafe==1.0
 oauth2client==3.0.0
 protobuf==3.6.1
@@ -33,5 +33,5 @@ requests==2.20.0
 rsa==4.0
 six==1.11.0
 uritemplate==3.0.0
-urllib3==1.23
+urllib3==1.24.1
 Werkzeug==0.14.1
