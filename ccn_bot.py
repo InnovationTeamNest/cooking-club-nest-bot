@@ -46,7 +46,7 @@ def check_turn(counter=0):
 
 def fetch_turn_calendar(date, counter):
     try:
-        offset = date.day - datetime.date.today().day
+        offset = (date - datetime.date.today()).days
         assigned_group = get_assigned_people(offset)
     except Exception as ex:
         log.info("Unable to fetch data from Google Calendar... "
@@ -120,9 +120,7 @@ def send_notification(date, assigned_group, counter=0):
 def weekly_notification(date):
     try:
         message = ["Salve! Questa settimana toccherà ai seguenti gruppi: "]
-        date = date + datetime.timedelta(days=-1)
         for i in range(0, 7):
-            date = date + datetime.timedelta(days=1)
             assigned_group = fetch_turn_calendar(date, 0)
             try:
                 if assigned_group is None:
@@ -134,6 +132,7 @@ def weekly_notification(date):
                 log.error("Unable to fetch data from Google Calendar... "
                           "No notification for today... What a pity!")
                 log.error(ex)
+            date += datetime.timedelta(days=1)
         sent_message = ccn_bot.send_message(chat_id=group_chat_id,
                                             text="".join(message),
                                             parse_mode="Markdown")
