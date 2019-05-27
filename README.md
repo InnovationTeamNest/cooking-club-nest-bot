@@ -40,4 +40,4 @@ Feel free to contribute by forking the project and issuing a pull request. Any c
 
 ## To-Do
 
-* Insert information about implemented functionality
+* Create folder hierarchy
