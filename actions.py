@@ -71,7 +71,7 @@ def info(bot, update):
                          text=f"Ciao! Questo bot è stato creato dal club Tech@Nest durante un Hackathon il 19/11/"
                               f"2017. Il bot è stato ideato da Gianvito Taneburgo, ora non più al Nest. Al momento"
                               f" il bot è mantenuto da Matteo Franzil, se serve aiuto conttattalo su @mfranzil."
-                              f"\n\nMembri del Direttivo:\n\n{direttivo_names}")
+                              f"\n\n*Membri del Direttivo*:\n{direttivo_names}")
     except Exception as ex:
         log.info("Unable to send Telegram message!\n")
         log.critical(ex)
