@@ -7,4 +7,5 @@ if __name__ == "__main__":
     import ccn_bot
     import datetime
 
-    ccn_bot.weekly_notification(datetime.date.today())
+    #ccn_bot.weekly_notification(datetime.date(2019, 6, 17))
+    ccn_bot.check_turn()

@@ -21,7 +21,7 @@ def get_google_calendar_service():
     return discovery.build('calendar', 'v3', http=http)
 
 
-def get_assigned_people(offset):
+def get_day_event(offset):
     calendar_service = get_google_calendar_service()
     now = datetime.datetime.utcnow() + datetime.timedelta(days=offset)
     endday = now.replace(hour=21, minute=0, second=0)
@@ -31,4 +31,4 @@ def get_assigned_people(offset):
                                                  maxResults=1, singleEvents=True,
                                                  orderBy='startTime').execute()
     events = eventresult.get('items')
-    return str(events[0].get("summary"))
+    return events[0]

@@ -9,7 +9,7 @@ import telegram
 from google.cloud import datastore
 
 from common import MAX_ATTEMPTS, translate_date
-from google_calendar import get_assigned_people
+from google_calendar import get_day_event
 from secrets import ccn_bot_token, group_chat_id
 
 ccn_bot = telegram.Bot(ccn_bot_token)
@@ -30,11 +30,12 @@ def check_turn(counter=0):
         return 424
 
     log.info(f"Checking turn for day {today} at {str(time.strftime(str('%c')))}")
-    assigned_group = fetch_turn_calendar(datetime.date.today(), counter)
+    assigned_group, assigned_description = fetch_turn_calendar(datetime.date.today(), counter)
+    print(assigned_group, assigned_description)
 
     try:
         log.info(f"Today's turn: {assigned_group}")
-        send_notification(today, assigned_group)
+        send_notification(today, assigned_group, assigned_description)
     except Exception as ex:
         log.info("Unable to fetch data from Google Calendar... "
                  "No notification for today... What a pity!")
@@ -47,16 +48,16 @@ def check_turn(counter=0):
 def fetch_turn_calendar(date, counter):
     try:
         offset = (date - datetime.date.today()).days
-        assigned_group = get_assigned_people(offset)
+        event = get_day_event(offset)
     except Exception as ex:
         log.info("Unable to fetch data from Google Calendar... "
                  "No notification for today... What a pity!")
         if counter < MAX_ATTEMPTS:
             time.sleep(2 ** counter)
-            fetch_turn_calendar(date, counter + 1)
+            return fetch_turn_calendar(date, counter + 1)
         log.critical(ex)
         return
-    return assigned_group
+    return int(event.get("summary")), str(event.get("description"))
 
 
 def push_data(date, assigned_group):
@@ -73,16 +74,16 @@ def day_already_checked(date):
     return client.get(client.key('CheckedDay', date))
 
 
-def send_notification(date, assigned_group, counter=0):
+def send_notification(date, assigned_group, assigned_description, counter=0):
     try:
         # there could be days with no turn. It is useless to send a message to
         # the group in this case.
         if assigned_group:
-            people = api.get_group(assigned_group)
-
             if int(assigned_group) < 100:
-                if datetime.datetime.today().month == 11 \
-                        and datetime.datetime.today().day == 19:
+                # Gruppo "normale"
+                people = api.get_group(assigned_group)
+
+                if datetime.datetime.today().month == 11 and datetime.datetime.today().day == 19:
                     message = f"Buongiorno a tutti! Oggi dovranno pulire {', '.join(people)} " \
                               f"del gruppo *{assigned_group}*, ma cosa più " \
                               f"importante, è il mio compleanno!\n\n" \
@@ -91,8 +92,10 @@ def send_notification(date, assigned_group, counter=0):
                     message = f"Salve! Oggi il turno di pulizie è del gruppo *{assigned_group}*," \
                               f" composto da {', '.join(people)}.\n\nBuona fortuna! 👨🏻‍🍳"
             else:
-                message = f"Salve! Oggi dovranno scontare il proprio richiamo {', '.join(people)}" \
-                          f".\n\nBuona fortuna!"
+                # Richiamo
+                message = f"Salve! Oggi dovranno scontare il proprio *richiamo* {assigned_description}" \
+                          f".\n\nBuona fortuna! 🔪👮🏻‍♂️"
+
             sent_message = ccn_bot.send_message(chat_id=group_chat_id,
                                                 text=message,
                                                 parse_mode="Markdown")
@@ -121,13 +124,17 @@ def weekly_notification(date):
     try:
         message = ["Salve! Questa settimana toccherà ai seguenti gruppi: "]
         for i in range(0, 7):
-            assigned_group = fetch_turn_calendar(date, 0)
+            assigned_group, assigned_description = fetch_turn_calendar(date, 0)
+            log.info(f"Checking day {i} for {assigned_group} and {assigned_description}")
             try:
                 if assigned_group is None:
                     message.append(f"\n{translate_date(date)} - Nessuno")
                 else:
-                    people = api.get_group(assigned_group)
-                    message.append(f"\n{translate_date(date)} - Gruppo *{assigned_group}*: {', '.join(people)}")
+                    if assigned_group < 100:
+                        people = api.get_group(assigned_group)
+                        message.append(f"\n{translate_date(date)} - Gruppo *{assigned_group}*: {', '.join(people)}")
+                    else:
+                        message.append(f"\n{translate_date(date)} - *Richiamo*: {assigned_description}")
             except Exception as ex:
                 log.error("Unable to fetch data from Google Calendar... "
                           "No notification for today... What a pity!")
