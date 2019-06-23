@@ -93,7 +93,8 @@ def send_notification(date, assigned_group, assigned_description, counter=0):
                               f" composto da {', '.join(people)}.\n\nBuona fortuna! 👨🏻‍🍳"
             else:
                 # Richiamo
-                message = f"Salve! Oggi dovranno scontare il proprio *richiamo* {assigned_description}" \
+                message = f"Salve! Oggi {'dovranno' if ',' in assigned_description else 'dovrà'}" \
+                          f" scontare il proprio *richiamo* {assigned_description}" \
                           f".\n\nBuona fortuna! 🔪👮🏻‍♂️"
 
             sent_message = ccn_bot.send_message(chat_id=group_chat_id,
