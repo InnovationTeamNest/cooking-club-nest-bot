@@ -4,7 +4,7 @@ import logging as log
 days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
 
 MAX_MESSAGES = 20
-MAX_GROUPS = 22
+MAX_GROUPS = 25
 MAX_ATTEMPTS = 5
 
 # Metodo che prende in ingresso date, in formato datetime, e phrase, un parametro per regolare la frase in uscita.

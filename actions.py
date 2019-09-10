@@ -96,7 +96,7 @@ def group(bot, update, args):
     ReplyStatus.allfalse()
     try:
         args = str(args[0])
-        if args in api.get_group_numbers() and int(args) <= MAX_GROUPS:
+        if int(args) - 1 in range(MAX_GROUPS) and int(args) <= MAX_GROUPS:
             people = api.get_group(args)
             message = f"Il gruppo {args} è formato da {', '.join(people)}."
         else:

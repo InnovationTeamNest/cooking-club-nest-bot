@@ -6,10 +6,9 @@ import time
 import api
 
 import telegram
-from google.cloud import datastore
 
 from common import MAX_ATTEMPTS, translate_date
-from google_calendar import get_day_event
+from api import get_day_event
 from secrets import ccn_bot_token, group_chat_id
 
 ccn_bot = telegram.Bot(ccn_bot_token)
@@ -19,7 +18,7 @@ def check_turn(counter=0):
     today = time.strftime(str("%d/%m/%Y"))
 
     try:
-        res = day_already_checked(today)
+        res = api.day_already_checked(today)
         log.info(f"Already checked? {repr(res)}")
         if res:
             return 200
@@ -60,20 +59,6 @@ def fetch_turn_calendar(date, counter):
     return int(event.get("summary")), str(event.get("description"))
 
 
-def push_data(date, assigned_group):
-    client = datastore.Client()
-    key = client.key('CheckedDay', date)
-    entity = datastore.Entity(key=key)
-    entity['day'] = date
-    entity['people'] = assigned_group
-    client.put(entity)
-
-
-def day_already_checked(date):
-    client = datastore.Client()
-    return client.get(client.key('CheckedDay', date))
-
-
 def send_notification(date, assigned_group, assigned_description, counter=0):
     try:
         # there could be days with no turn. It is useless to send a message to
@@ -102,7 +87,7 @@ def send_notification(date, assigned_group, assigned_description, counter=0):
                                                 parse_mode="Markdown")
             ccn_bot.pin_chat_message(group_chat_id, sent_message.message_id)
         # the date can be considered processed in any case
-        push_data(date, assigned_group)
+        api.push_data(date, assigned_group)
     except Exception as ex:
         log.info("Unable to send Telegram notification. No notification for "
                  "today... What a pity!")
