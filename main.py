@@ -5,7 +5,7 @@ from timeit import default_timer as timer
 
 from flask import Flask, request
 
-import ccn_bot
+from bot import ccn_bot
 from secrets import url, ccn_bot_token
 
 app = Flask(__name__)
@@ -45,7 +45,7 @@ def weekly():
 @app.route('/set_webhook', methods=['GET'])
 def wb():
     if 'X-Appengine-Cron' in request.headers:
-        from webhook import dispatcher_setup, bot
+        from routing.webhook import dispatcher_setup, bot
         dispatcher_setup()  # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
         res = bot.setWebhook(url + ccn_bot_token)
         if res:
@@ -59,7 +59,7 @@ def wb():
 @app.route('/' + ccn_bot_token, methods=['POST'])
 def update():
     import telegram
-    from webhook import bot, process
+    from routing.webhook import bot, process
 
     # De-Jsonizzo l'update
     update = telegram.Update.de_json(request.get_json(force=True), bot)

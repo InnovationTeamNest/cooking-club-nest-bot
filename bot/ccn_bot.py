@@ -3,12 +3,11 @@
 import datetime
 import logging as log
 import time
-import api
 
 import telegram
 
+from api import api
 from common import MAX_ATTEMPTS, translate_date
-from api import get_day_event
 from secrets import ccn_bot_token, group_chat_id
 
 ccn_bot = telegram.Bot(ccn_bot_token)
@@ -47,7 +46,7 @@ def check_turn(counter=0):
 def fetch_turn_calendar(date, counter):
     try:
         offset = (date - datetime.date.today()).days
-        event = get_day_event(offset)
+        event = api.get_day_event(offset)
     except Exception as ex:
         log.info("Unable to fetch data from Google Calendar... "
                  "No notification for today... What a pity!")
@@ -70,17 +69,17 @@ def send_notification(date, assigned_group, assigned_description, counter=0):
 
                 if datetime.datetime.today().month == 11 and datetime.datetime.today().day == 19:
                     message = f"Buongiorno a tutti! Oggi dovranno pulire {', '.join(people)} " \
-                              f"del gruppo *{assigned_group}*, ma cosa più " \
-                              f"importante, è il mio compleanno!\n\n" \
-                              f"Buona pulizia a tutti! 🎉🥳"
+                        f"del gruppo *{assigned_group}*, ma cosa più " \
+                        f"importante, è il mio compleanno!\n\n" \
+                        f"Buona pulizia a tutti! 🎉🥳"
                 else:
                     message = f"Salve! Oggi il turno di pulizie è del gruppo *{assigned_group}*," \
-                              f" composto da {', '.join(people)}.\n\nBuona fortuna! 👨🏻‍🍳"
+                        f" composto da {', '.join(people)}.\n\nBuona fortuna! 👨🏻‍🍳"
             else:
                 # Richiamo
                 message = f"Salve! Oggi {'dovranno' if ',' in assigned_description else 'dovrà'}" \
-                          f" scontare il proprio *richiamo* {assigned_description}" \
-                          f".\n\nBuona fortuna! 🔪👮🏻‍♂️"
+                    f" scontare il proprio *richiamo* {assigned_description}" \
+                    f".\n\nBuona fortuna! 🔪👮🏻‍♂️"
 
             sent_message = ccn_bot.send_message(chat_id=group_chat_id,
                                                 text=message,

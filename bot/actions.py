@@ -4,7 +4,7 @@ import logging as log
 
 from telegram import ChatAction
 
-import api
+from api import api
 from common import MAX_MESSAGES, MAX_GROUPS
 from secrets import direttivo_names, direttivo_id
 
@@ -42,9 +42,9 @@ def text_filter(bot, update):  # Strettamente collegata alla classe definita in 
 def start(bot, update):
     try:
         bot.send_message(chat_id=update.message.chat_id,
-                         text="Ciao! Questo è il bot del Cooking Corner del Nest, mantenuto dal club Tech@Nest."
-                              + ". Per iniziare scrivi un comando o scrivi /help per aiuto.\nOgni altra richiesta "
-                                "verrà ignorata.")
+                         text="Ciao! Questo è il bot del Cooking Corner del Nest, mantenuto dal club Tech@Nest. "
+                              "Per iniziare scrivi un comando o scrivi /help per aiuto.\nOgni altra richiesta "
+                              "verrà ignorata.")
     except Exception as ex:
         log.info("Unable to send Telegram message!\n")
         log.critical(ex)
@@ -69,9 +69,9 @@ def info(bot, update):
     try:
         bot.send_message(chat_id=update.message.chat_id,
                          text=f"Ciao! Questo bot è stato creato dal club Tech@Nest durante un Hackathon il 19/11/"
-                              f"2017. Il bot è stato ideato da Gianvito Taneburgo, ora non più al Nest. Al momento"
-                              f" il bot è mantenuto da Matteo Franzil, se serve aiuto conttattalo su @mfranzil."
-                              f"\n\n*Membri del Direttivo*:\n{direttivo_names}",
+                         f"2017. Il bot è stato ideato da Gianvito Taneburgo, ora non più al Nest. Al momento"
+                         f" il bot è mantenuto da Matteo Franzil, se serve aiuto conttattalo su @mfranzil."
+                         f"\n\n*Membri del Direttivo*:\n{direttivo_names}",
                          parse_mode="Markdown")
     except Exception as ex:
         log.info("Unable to send Telegram message!\n")
@@ -100,7 +100,11 @@ def group(bot, update, args):
             people = api.get_group(args)
             message = f"Il gruppo {args} è formato da {', '.join(people)}."
         else:
-            message = "ID del gruppo non valido"
+            message = "Numero del gruppo inesistente. Sintassi: /gruppo <numero 1-25>"
+    except IndexError as ex:
+        message = f"Numero del gruppo inesistente. Sintassi: /gruppo <numero 1-25>"
+        ReplyStatus.groupresponse = False
+        log.critical(ex)
     except Exception as ex:
         message = f"Inserisci un numero da 1 a {str(MAX_GROUPS)} per ottenere informazioni sul gruppo."
         ReplyStatus.groupresponse = True
@@ -150,11 +154,10 @@ def dictionary_search(bot, update, name):
         results = []
         bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
 
-        for number, group_members in api.get_number_members_tuple():
-            for member in group_members:
-                if name.lower() in member.lower():
-                    results.append(f"\n{member} si trova nel gruppo {str(number)}")
-                    found += 1
+        for number, member in api.get_number_members_tuple():
+            if name.lower() in member.lower():
+                results.append(f"\n{member} si trova nel gruppo {str(number)}")
+                found += 1
         # E' necessario gestire sia zero persone che troppe (20+) in questo caso
         if found == 0:
             text = "Persona non trovata."

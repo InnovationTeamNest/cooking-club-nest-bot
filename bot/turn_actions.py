@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import datetime
 import logging as log
-import api
 
 from telegram import ReplyKeyboardRemove, ChatAction
 
-from ccn_bot import fetch_turn_calendar
+from api import api
+from bot.ccn_bot import fetch_turn_calendar
 from common import MAX_GROUPS, MAX_ATTEMPTS, day_to_string
-from telegramcalendar import create_calendar, process_calendar_selection
+from lib.telegramcalendar import create_calendar, process_calendar_selection
 
 
 # Metodi di gestione dei turni
@@ -19,13 +19,13 @@ def turn(bot, day, chat_id):
             people = api.get_group(assigned_group)
             if int(assigned_group) <= MAX_GROUPS:
                 message = f"{day_to_string(day, True)} il turno del" \
-                          f" gruppo {assigned_group} composto da " \
-                          f"{', '.join(people)}."
+                    f" gruppo {assigned_group} composto da " \
+                    f"{', '.join(people)}."
             else:
                 message = f"{day_to_string(day, True)} il turno di {', '.join(people)}" \
-                          f", che dovranno scontare il loro richiamo. "
+                    f", che dovranno scontare il loro richiamo. "
         else:
-            message = f"Nessun turno previsto per {day_to_string(day, False)}"
+            message = f"Nessun turno previsto per {day_to_string(day, False)}."
     except Exception as ex:
         log.info("An exception occurred!\n")
         log.critical(ex)

@@ -14,8 +14,8 @@ MAX_ATTEMPTS = 5
 # Ogni comando necessita di un CommandHandler appropriato,
 # che prende in ingresso un metodo con due parametri, bot e update
 def dispatcher_setup():
-    import actions
-    import turn_actions
+    from bot import actions
+    from bot import turn_actions
 
     global dispatcher
     dispatcher = Dispatcher(bot=bot, update_queue=None, workers=0)

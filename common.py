@@ -7,6 +7,7 @@ MAX_MESSAGES = 20
 MAX_GROUPS = 25
 MAX_ATTEMPTS = 5
 
+
 # Metodo che prende in ingresso date, in formato datetime, e phrase, un parametro per regolare la frase in uscita.
 # Utilizzato per discriminare oggi, domani dagli altri giorni nelle frasi.
 

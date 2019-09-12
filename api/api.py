@@ -3,8 +3,8 @@ import datetime
 
 from google.cloud import datastore
 
+from api.google_api import get_google_calendar_service, get_google_sheets_service
 from common import MAX_GROUPS
-from google_api import get_google_calendar_service, get_google_sheets_service
 from secrets import spreadsheet_id
 
 
