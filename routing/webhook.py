@@ -4,11 +4,10 @@ import time
 import telegram
 from telegram.ext import Dispatcher, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 
+from common import MAX_ATTEMPTS
 from secrets import url, ccn_bot_token
 
 bot = telegram.Bot(ccn_bot_token)
-
-MAX_ATTEMPTS = 5
 
 
 # Ogni comando necessita di un CommandHandler appropriato,

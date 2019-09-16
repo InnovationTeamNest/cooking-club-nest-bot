@@ -13,7 +13,7 @@ from lib.telegramcalendar import create_calendar, process_calendar_selection
 # Metodi di gestione dei turni
 
 def turn(bot, day, chat_id):
-    assigned_group = fetch_turn_calendar(day, MAX_ATTEMPTS)
+    assigned_group, assigned_description = fetch_turn_calendar(day, MAX_ATTEMPTS)
     try:
         if assigned_group:
             people = api.get_group(assigned_group)

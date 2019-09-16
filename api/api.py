@@ -5,7 +5,7 @@ from google.cloud import datastore
 
 from api.google_api import get_google_calendar_service, get_google_sheets_service
 from common import MAX_GROUPS
-from secrets import spreadsheet_id
+from secrets import spreadsheet_id, calendar_id
 
 
 # Metodi per l'ottenimento dei gruppi
@@ -72,7 +72,7 @@ def get_day_event(offset):
     now = now.isoformat() + "+01:00"
     endday = endday.isoformat() + "+01:00"
     eventresult = calendar_service.events().list(
-        calendarId='primary', timeMax=endday, timeMin=now,
+        calendarId=calendar_id, timeMax=endday, timeMin=now,
         maxResults=1, singleEvents=True, orderBy='startTime').execute()
     events = eventresult.get('items')
     return events[0]
