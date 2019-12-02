@@ -7,7 +7,7 @@ import time
 import telegram
 
 from api import api
-from common import MAX_ATTEMPTS, translate_date
+from common import MAX_ATTEMPTS, translate_date, MAX_GROUPS
 from secrets import ccn_bot_token, group_chat_id
 
 ccn_bot = telegram.Bot(ccn_bot_token)
@@ -58,14 +58,14 @@ def fetch_turn_calendar(date, counter):
     return int(event.get("summary")), str(event.get("description"))
 
 
-def send_notification(date, assigned_group, assigned_description, counter=0):
+def send_notification(date, assigned_group, _assigned_description, counter=0):
     try:
         # there could be days with no turn. It is useless to send a message to
         # the group in this case.
         if assigned_group:
+            people = api.get_group(assigned_group)
             if int(assigned_group) < 100:
                 # Gruppo "normale"
-                people = api.get_group(assigned_group)
 
                 if datetime.datetime.today().month == 11 and datetime.datetime.today().day == 19:
                     message = f"Buongiorno a tutti! Oggi dovranno pulire {', '.join(people)} " \
@@ -76,11 +76,23 @@ def send_notification(date, assigned_group, assigned_description, counter=0):
                     message = f"Salve! Oggi il turno di pulizie è del gruppo *{assigned_group}*," \
                         f" composto da {', '.join(people)}.\n\nBuona fortuna! 👨🏻‍🍳"
             else:
-                # Richiamo
-                message = f"Salve! Oggi {'dovranno' if ',' in assigned_description else 'dovrà'}" \
-                    f" scontare il proprio *richiamo* {assigned_description}" \
-                    f".\n\nBuona fortuna! 🔪👮🏻‍♂️"
+                try:
+                    original_group = int(people[0])
+                except Exception as ex:
+                    original_group = -1
 
+                if original_group == -1:
+                    message = f"Salve! Oggi non sarà una bella giornata per {', '.join(people[1:])}" \
+                              f", che {'dovranno' if len(people[1:]) > 1 else 'dovrà'}" \
+                              f" scontare il proprio *richiamo*.\n\nBuona fortuna! 🔪👮🏻‍♂️"
+                elif 0 < original_group <= MAX_GROUPS:
+                    original_group_people = api.get_group(original_group)
+                    message = f"Salve! Oggi il turno di pulizie è del gruppo {original_group}, composto da " \
+                              f"{', '.join(original_group_people)}.\n\nIn aggiunta {', '.join(people[1:])}" \
+                              f" {'dovranno' if len(people[1:]) > 1 else 'dovrà'} scontare il proprio *richiamo*." \
+                              f"\n\nBuona fortuna! 🔪👮🏻‍♂️"
+                else:
+                    raise AttributeError
             sent_message = ccn_bot.send_message(chat_id=group_chat_id,
                                                 text=message,
                                                 parse_mode="Markdown")

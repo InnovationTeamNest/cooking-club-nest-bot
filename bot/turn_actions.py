@@ -19,11 +19,25 @@ def turn(bot, day, chat_id):
             people = api.get_group(assigned_group)
             if int(assigned_group) <= MAX_GROUPS:
                 message = f"{day_to_string(day, True)} il turno del" \
-                    f" gruppo {assigned_group} composto da " \
-                    f"{', '.join(people)}."
+                          f" gruppo {assigned_group} composto da " \
+                          f"{', '.join(people)}."
             else:
-                message = f"{day_to_string(day, True)} il turno di {', '.join(people)}" \
-                    f", che dovranno scontare il loro richiamo. "
+                try:
+                    original_group = int(people[0])
+                except Exception as ex:
+                    original_group = -1
+
+                if original_group == -1:
+                    message = f"{day_to_string(day, True)} il turno di {', '.join(people[1:])}" \
+                              f", che dovranno scontare il loro richiamo. "
+                elif 0 < original_group <= MAX_GROUPS:
+                    original_group_people = api.get_group(original_group)
+                    message = f"{day_to_string(day, True)} il turno del" \
+                              f" gruppo {original_group} composto da " \
+                              f"{', '.join(original_group_people)}.\n\nIn aggiunta {', '.join(people[1:])}" \
+                              f" {'dovranno' if len(people[1:]) > 1 else 'dovrà'} scontare il loro richiamo. 🧹"
+                else:
+                    raise AttributeError
         else:
             message = f"Nessun turno previsto per {day_to_string(day, False)}."
     except Exception as ex:
