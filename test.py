@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 import datetime
+import logging as log
 
-from api import api
-from bot.ccn_bot import fetch_turn_calendar
-from common import MAX_ATTEMPTS
+from cron import services
+from common import MAX_ATTEMPTS, LOG_FORMAT
 
 if __name__ == "__main__":
     import os
 
+    log.basicConfig(level=log.INFO, format=LOG_FORMAT)
+
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "credentials.json"
 
-    day = datetime.date.today()
-    assigned_group = fetch_turn_calendar(day, MAX_ATTEMPTS)
-
-    print(assigned_group)
+    services.turn(0)

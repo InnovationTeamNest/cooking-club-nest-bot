@@ -10,20 +10,32 @@ from secrets import spreadsheet_id, calendar_id
 
 # Metodi per l'ottenimento dei gruppi
 
-def get_group(id):
-    range_ = f"Gruppi!A{id}:H{id}"
-    data = get_google_sheets_service().spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_).execute()
+def get_group_by_id(id):
+    if type(id) is tuple:
+        data = []
+        for subid in id:
+            data.append(get_group_by_id(subid))
+        return data
 
-    try:
-        if data["values"][0][0] == "NONE":
+    elif type(id) is int:
+        range_ = f"Gruppi!A{id}:D{id}"
+
+        service = get_google_sheets_service()
+        data = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_).execute()
+
+        try:
+            if data["values"][0][0] == "NONE":
+                return None
+            return data["values"][0]
+        except KeyError as ex:
             return None
-        return data["values"][0]
-    except KeyError as ex:
+
+    else:
         return None
 
 
-def get_multiple_groups(start, end):
-    range_ = f"Gruppi!A{start}:H{end}"
+def get_groups_by_range(start, end):
+    range_ = f"Gruppi!A{start}:D{end}"
     data = get_google_sheets_service().spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_).execute()
 
     for group_number in range(len(data["values"])):
@@ -36,9 +48,9 @@ def get_multiple_groups(start, end):
         return None
 
 
-def get_number_members_tuple():
+def get_all_group_tuples():
     result = []
-    people = get_multiple_groups(1, MAX_GROUPS)
+    people = get_groups_by_range(1, MAX_GROUPS)
 
     i = 1
     for group in people:
@@ -51,19 +63,21 @@ def get_number_members_tuple():
 
 # Metodi per la memorizzazione della data
 
-def push_data(date, assigned_group):
+def set_day_checked(date, assigned_group):
     client = datastore.Client()
     key = client.key('CheckedDay', date)
     entity = datastore.Entity(key=key)
     entity['day'] = date
-    entity['people'] = assigned_group
+    entity['people'] = str(assigned_group)
     client.put(entity)
 
 
-def day_already_checked(date):
+def is_day_checked(date):
     client = datastore.Client()
     return client.get(client.key('CheckedDay', date))
 
+
+# Metodo per l'ottenimento degli eventi da Google Calendar
 
 def get_day_event(offset):
     calendar_service = get_google_calendar_service()
