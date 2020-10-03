@@ -3,7 +3,7 @@ import datetime
 import logging as log
 
 from cron import services
-from common import MAX_ATTEMPTS, LOG_FORMAT
+from common import LOG_FORMAT
 
 if __name__ == "__main__":
     import os

@@ -115,19 +115,6 @@ def dispatcher_setup():
     global dispatcher
     dispatcher = Dispatcher(bot=ccn_bot, update_queue=None, workers=0, use_context=True)
 
-    # dispatcher.add_handler(CommandHandler("start", actions.start))
-    # dispatcher.add_handler(CommandHandler("help", actions.help))
-    # dispatcher.add_handler(CommandHandler("info", actions.info))
-    # dispatcher.add_handler(CommandHandler("cerca", actions.search, pass_args=True))
-    # dispatcher.add_handler(CommandHandler("gruppo", actions.group, pass_args=True))
-    #
-    # dispatcher.add_handler(CommandHandler("oggi", turn_actions.today_turn))
-    # dispatcher.add_handler(CommandHandler("domani", turn_actions.tomorrow_turn))
-    # dispatcher.add_handler(CommandHandler("turno", turn_actions.turn_keyboard))
-    #
-    # dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, actions.text_filter))
-    # dispatcher.add_handler(CallbackQueryHandler(turn_actions.inline_handler))
-
 
 def process(update, counter=0):
     try:

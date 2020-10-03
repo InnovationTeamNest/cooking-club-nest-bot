@@ -4,10 +4,9 @@ from timeit import default_timer as timer
 
 from flask import Flask, request
 
-import cron.helpers
 from cron import services
 from common import LOG_FORMAT
-from secrets import url, ccn_bot_token
+from secrets import ccn_bot_token
 
 app = Flask(__name__)
 
