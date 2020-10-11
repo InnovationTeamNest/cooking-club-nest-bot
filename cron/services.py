@@ -4,8 +4,8 @@ import datetime
 import logging as log
 import time
 
-from flask import Request
 import telegram
+from flask import Request
 
 import cron.helpers
 from api import api

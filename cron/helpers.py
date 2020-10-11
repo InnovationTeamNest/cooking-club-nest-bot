@@ -6,7 +6,7 @@ from telegram import Bot
 from telegram.ext import Dispatcher
 
 from api import api
-from common import MAX_ATTEMPTS, flatten, stringify, MAX_GROUPS
+from common import MAX_ATTEMPTS, flatten, stringify, MAX_GROUPS, ranges
 from secrets import group_chat_id, ccn_bot_token, url
 
 ccn_bot = Bot(ccn_bot_token)
@@ -51,21 +51,40 @@ def get_next_days_turns():
         return "_da definire_"
 
 
+def get_turnout():
+    try:
+        today = datetime.datetime.today()
+        turnout = flatten(api.get_turnout_data(today))
+
+        string = []
+
+        for i in range(len(turnout)):
+            string.append(f"{ranges[i]}: {turnout[i]}")
+
+        return "\n".join(string)
+    except Exception as ex:
+        log.critical(ex)
+        return "_Nessun dato disponibile oggi._"
+
+
 def get_message_string(assigned_group):
     people = flatten(api.get_group_by_id(assigned_group))
     next_days_turns = get_next_days_turns()
+    turnout = get_turnout()
     if type(assigned_group) is tuple:
         return f"Salve! Oggi il turno di pulizie è dei gruppi" \
                f" *{stringify(assigned_group)}*, composti da:" \
                f"\n\n{', '.join(people)}." \
                f"\n\nBuona fortuna! 👨🏻‍🍳" \
-               f"\n\nTurni dei prossimi giorni: {next_days_turns}"
+               f"\n\nTurni dei prossimi giorni: {next_days_turns}" \
+               f"\n\nPrevisioni di affluenza nelle fasce orarie critiche:\n{turnout}"
     elif int(assigned_group) < MAX_GROUPS:
         return f"Salve! Oggi il turno di pulizie è del gruppo" \
                f" *{assigned_group}*, composto da:" \
                f"\n\n{', '.join(people)}." \
                f"\n\nBuona fortuna! 👨🏻‍🍳" \
-               f"\n\nTurni dei prossimi giorni: {next_days_turns}"
+               f"\n\nTurni dei prossimi giorni: {next_days_turns}" \
+               f"\n\nPrevisioni di affluenza nelle fasce orarie critiche:\n{turnout}"
     elif int(assigned_group) > 100:
         try:
             original_group = int(people[0])

@@ -1,6 +1,7 @@
 import datetime
 
 days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
+ranges = ["11:00-11:30", "11:30-12:00", "12:00-12:30", "12:30-13:00", "13:00-13:30", "13:30-14:00", "14:00-14:30"]
 
 MAX_SEARCH_RESULTS = 20
 MIN_GROUPS = 1

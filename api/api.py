@@ -90,3 +90,17 @@ def get_day_event(offset):
         maxResults=1, singleEvents=True, orderBy='startTime').execute()
     events = eventresult.get('items')
     return events[0]
+
+
+# Metodo per ottenere i dati di affluenza dal foglio Google
+
+def get_turnout_data(day: datetime.datetime):
+    day_no = day.weekday() + 1
+
+    range_ = f"Affluenza!A{day_no}:G{day_no}"
+    data = get_google_sheets_service().spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_).execute()
+
+    try:
+        return data["values"]
+    except KeyError as ex:
+        return None
