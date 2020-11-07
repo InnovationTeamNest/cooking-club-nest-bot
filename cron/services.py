@@ -8,6 +8,7 @@ import telegram
 from flask import Request
 
 import cron.helpers
+import dispatcher.dispatcher
 from api import api
 from cron.helpers import fetch_turn_calendar, send_cron_notification
 from secrets import ccn_bot_token, url
@@ -46,7 +47,7 @@ def turn(counter=0):
 
 def set_webhook():
     # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
-    cron.helpers.dispatcher_setup()
+    dispatcher.dispatcher.dispatcher_setup()
     res = ccn_bot.set_webhook(url + ccn_bot_token)
     if res:
         return "Success!", 200
@@ -58,6 +59,6 @@ def incoming_update(request: Request):
     update = telegram.Update.de_json(request.get_json(force=True, cache=False), ccn_bot)
     log.info(request.get_json(force=True, cache=False))
     log.info(update)
-    res = cron.helpers.process(update)
+    res = dispatcher.dispatcher.process(update)
 
     return res

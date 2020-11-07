@@ -21,3 +21,14 @@ def stringify(__tuple):
         return f"{str(__tuple[0])} e {str(__tuple[1])}"
     else:
         return str(__tuple)[1:-1]
+
+
+def calendar_to_int_tuple(list):
+    target_list = []
+    for item in str(list).split(" "):
+        try:
+            target_list.append(int(item))
+        except ValueError:
+            pass
+
+    return tuple(target_list)

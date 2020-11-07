@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 
+import requests
 from google.cloud import datastore
 
 from api.google_api import get_google_calendar_service, get_google_sheets_service
