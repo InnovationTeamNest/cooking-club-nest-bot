@@ -1,7 +1,6 @@
 import datetime
 import logging as log
 import time
-from timeit import Timer
 
 import requests
 from telegram import Bot
@@ -35,45 +34,51 @@ def fetch_turn_calendar(date, counter):
 
 
 def get_next_days_turns():
-    try:
-        groups_tomorrow = fetch_turn_calendar(datetime.date.today() + datetime.timedelta(days=1), 0)
-        groups_tomorrow_after = fetch_turn_calendar(datetime.date.today() + datetime.timedelta(days=2), 0)
+    message = ""
+    timedelta = 1
+    days = 0
+    while timedelta < 8 and days < 2:
+        try:
+            fetched_groups = fetch_turn_calendar(datetime.date.today() + datetime.timedelta(days=timedelta),
+                                                 common.MAX_ATTEMPTS)  # only a single attempt
+        except TimeoutError:
+            timedelta += 1
+            continue
 
-        groups_tomorrow_final = []
-        for item in groups_tomorrow:
-            if item >= 100:
-                groups_tomorrow_final.append("persone richiamate")
-            else:
-                groups_tomorrow_final.append(item)
+        group_array = []
+        if type(fetched_groups) is tuple:
+            for item in fetched_groups:
+                if item >= 100:
+                    group_array.append("persone richiamate")
+                else:
+                    group_array.append(str(item) + ", ")
+            group_array += "dopo cena"
+        elif type(fetched_groups) is list:
+            after_lunch_groups = fetched_groups[0]
+            for item in after_lunch_groups:
+                if item >= 100:
+                    group_array.append("persone richiamate, ")
+                else:
+                    group_array.append(str(item) + ", ")
+            group_array += "dopo pranzo; "
 
-        groups_tomorrow_after_final = []
-        for item in groups_tomorrow_after:
-            if item >= 100:
-                groups_tomorrow_after_final.append("persone richiamate")
-            else:
-                groups_tomorrow_after_final.append(item)
+            after_dinner_groups = fetched_groups[1]
+            for item in after_dinner_groups:
+                if item >= 100:
+                    group_array.append("persone richiamate, ")
+                else:
+                    group_array.append(str(item) + ", ")
+            group_array += "dopo cena"
 
-        return f"domani *{common.stringify(tuple(groups_tomorrow_final))}*," \
-               f" dopodomani *{common.stringify(tuple(groups_tomorrow_after_final))}*."
-    except Exception as ex:
-        log.critical(ex)
-        return "_da definire_"
+        else:
+            raise AttributeError("Provided data must be either a list of two tuples or a single tuple")
 
+        message += f"{common.get_day_name(timedelta)} (tra {timedelta} giorni):" \
+                   f" *{''.join(group_array)}*\n"
+        timedelta += 1
+        days += 1
 
-def get_turnout():
-    try:
-        today = datetime.datetime.today()
-        turnout = common.flatten(api.get_turnout_data(today))
-
-        string = []
-
-        for i in range(len(turnout)):
-            string.append(f"{common.ranges[i]}: {turnout[i]}")
-
-        return "\n".join(string)
-    except Exception as ex:
-        log.critical(ex)
-        return "_Nessun dato disponibile oggi._"
+    return message
 
 
 def unpin_all_messages():
@@ -83,44 +88,52 @@ def unpin_all_messages():
 
 
 def get_message_string(assigned_group):
+    if type(assigned_group) is list:  # [(1, 2, 3, 4), (5, 6, 7, 8)]
+        # Post-lunch turn and post-dinner turn. Must be exactly two
+        people_after_lunch = common.flatten(api.get_group_by_id(assigned_group[0]))
+        people_after_dinner = common.flatten(api.get_group_by_id(assigned_group[1]))
+        message = f"Salve! Oggi ci saranno due turni di pulizie.\n\n"\
+                  f"Il turno dopo pranzo è dei gruppi *{common.stringify(assigned_group[0])}*, composti da:" \
+                  f"\n\n{', '.join(people_after_lunch)}." \
+                  f"\n\nIl turno dopo cena è dei gruppi *{common.stringify(assigned_group[1])}*, composti da:" \
+                  f"\n\n{', '.join(people_after_dinner)}." \
+                  f"\n\nBuona fortuna! 👨🏻‍🍳"
+    elif type(assigned_group) is tuple:  # (1, 2, 3, 4)
+        # Single turn
+        if len(assigned_group) == 1:
+            # Just a group assigned
+            message = get_message_string_single(assigned_group[0])  # (1,) -> 1
+        else:
+            people = common.flatten(api.get_group_by_id(assigned_group))
+            message = f"Salve! Oggi il turno di pulizie è dei gruppi" \
+                      f" *{common.stringify(assigned_group)}*, composti da:" \
+                      f"\n\n{', '.join(people)}." \
+                      f"\n\nBuona fortuna! 👨🏻‍🍳"
+    else:
+        raise AttributeError("Provided data must be either a list of two tuples or a single tuple")
+
+    message += f"\n\nProssimi turni:\n{get_next_days_turns()}"
+
+    log.info(f"Crafted message: {message}")
+    return message
+
+
+def get_message_string_single(assigned_group):
     people = api.get_group_by_id(assigned_group)
 
-    if len(assigned_group) == 1:
-        assigned_group = assigned_group[0]
-
-    if type(assigned_group) is tuple:
-        # Two or more groups cleaning
-        people = common.flatten(people)  # People is a list of lists
-        message = f"Salve! Oggi il turno di pulizie è dei gruppi" \
-                  f" *{common.stringify(assigned_group)}*, composti da:" \
-                  f"\n\n{', '.join(people)}." \
-                  f"\n\nBuona fortuna! 👨🏻‍🍳"
-
-    elif 0 < int(assigned_group) <= common.MAX_GROUPS:
-        # One group cleaning cleaning
+    if 0 < int(assigned_group) <= common.MAX_GROUPS:  # 10
+        # The group is a standard one
         message = f"Salve! Oggi il turno di pulizie è del gruppo" \
                   f" *{assigned_group}*, composto da:" \
-                  f"\n\n{', '.join(people)}." \
+                  f"\n\n{',  ,'.join(people)}." \
                   f"\n\nBuona fortuna! 👨🏻‍🍳"
 
-    elif int(assigned_group) >= 100:
-        # Punishment
-        original_group = common.calendar_to_int_tuple(people[0][0])
+    elif int(assigned_group) >= 100:  # 101
+        # This is a punishment
+        original_group = common.calendar_to_int_tuple(people[0])
         log.info(f"Retrieved data for original group: {original_group}")
 
-        if len(original_group) == 1:
-            original_group = original_group[0]
-
-        if type(original_group) is tuple:
-            # Two or more groups being punished
-            original_group_people = common.flatten(api.get_group_by_id(original_group))
-            message = f"Salve! Oggi non sarà una bella giornata per i gruppi " \
-                      f"*{common.stringify(original_group)}*, composti da " \
-                      f"{', '.join(original_group_people)}, " \
-                      f"che dovranno scontare il proprio *richiamo*." \
-                      f"\n\nBuona fortuna! 🔪👮🏻‍♂️"
-
-        elif 0 < int(original_group) <= common.MAX_GROUPS:
+        if 0 < int(original_group) <= common.MAX_GROUPS:
             # Single group being punished
             original_group_people = api.get_group_by_id(original_group)
             message = f"Salve! Oggi non sarà una bella giornata per il gruppo " \
@@ -139,14 +152,10 @@ def get_message_string(assigned_group):
                       f"\n\nBuona fortuna! 🔪👮🏻‍♂️"
 
         else:
-            raise AttributeError
+            raise AttributeError("Either provide a standard single group in the calendar,"
+                                 " or a -1 followed by a list of people in the adjacent cell.")
     else:
-        raise AttributeError
-
-    message += f"\n\nTurni dei prossimi giorni: {get_next_days_turns()}" \
-               f"\n\nPrevisioni di affluenza nelle fasce orarie critiche:\n{get_turnout()}"
-
-    log.info(f"Crafted message: {message}")
+        raise AttributeError("Either provide a single int group or a number > 100 for a punishment.")
 
     return message
 
