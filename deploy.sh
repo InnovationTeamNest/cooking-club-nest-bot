@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 LV=`cat auto/last_version`
 PNAME=`cat auto/project_name`
 
@@ -16,7 +15,7 @@ echo "$version - $changelog" >> auto/changelog
 
 echo "$version" > auto/last_version
 
-git add . && \
+git add -A && \
 git add -u && \
 git commit -m "$changelog" && \
 git push

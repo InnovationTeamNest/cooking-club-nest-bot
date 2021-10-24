@@ -2,7 +2,6 @@ secrets.py
 client_secret.json
 calendar-python-quickstart.json
 credentials.json
-auto/
 .idea/
 .vscode/
 venv/

@@ -1,6 +1,14 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: osx-arm64
+# conda install flask
+# conda install google-api-core
+# conda install google-auth
+# conda install google-cloud-core
+# conda install google-cloud-datastore
+# conda install python-telegram-bot
+# conda install google-api-python-client
+
 aiohttp=3.7.4.post0=py39h5161555_0
 async-timeout=3.0.1=py_1000
 attrs=21.2.0=pyhd8ed1ab_0

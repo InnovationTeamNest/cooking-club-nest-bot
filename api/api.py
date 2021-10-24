@@ -19,7 +19,7 @@ def get_group_by_id(id):
         return data
 
     elif type(id) is int:
-        range_ = f"Gruppi!A{id}:D{id}"
+        range_ = f"Gruppi!A{id}:E{id}"
 
         service = get_google_sheets_service()
         data = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_).execute()
@@ -36,7 +36,7 @@ def get_group_by_id(id):
 
 
 def get_groups_by_range(start, end):
-    range_ = f"Gruppi!A{start}:D{end}"
+    range_ = f"Gruppi!A{start}:E{end}"
     data = get_google_sheets_service().spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_).execute()
 
     for group_number in range(len(data["values"])):
