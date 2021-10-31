@@ -49,7 +49,7 @@ def update():
 
 
 @app.route('/weekly', methods=['GET'])
-def turn():
+def weekly():
     if 'X-Appengine-Cron' in request.headers:
         start_time = timer()
         code = services.weekly()

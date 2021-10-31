@@ -2,10 +2,14 @@
 import datetime
 import logging as log
 
+import flask
+
 from common import LOG_FORMAT
 from cron import helpers
 
 if __name__ == "__main__":
+    # from main import app
+    # app.run()
     import os
 
     log.basicConfig(level=log.INFO, format=LOG_FORMAT)
