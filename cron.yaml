@@ -2,10 +2,14 @@ cron:
   - description: check daily turn from Google Calendar
     url: /turn
     timezone: Europe/Rome
-    schedule: every day 09:00
+    schedule: every day 09:30
     retry_parameters:
       min_backoff_seconds: 300
       max_doublings: 20
+  - description: send weekly turns
+    url: /weekly
+    timezone: Europe/Rome
+    schedule: every monday 08:30
   - description: set up the webhook to prevent failures
     url: /set_webhook
     timezone: Europe/Rome

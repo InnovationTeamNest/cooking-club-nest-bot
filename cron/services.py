@@ -10,7 +10,7 @@ from flask import Request
 import cron.helpers
 import dispatcher.dispatcher
 from api import api
-from cron.helpers import fetch_turn_calendar, send_cron_notification
+from cron.helpers import fetch_turn_calendar, send_cron_notification, weekly_notification
 from secrets import ccn_bot_token, url
 
 ccn_bot = telegram.Bot(ccn_bot_token)
@@ -62,3 +62,13 @@ def incoming_update(request: Request):
     res = dispatcher.dispatcher.process(update)
 
     return res
+
+
+def weekly():
+    today = time.strftime(str("%d/%m/%Y"))
+
+    log.info(f"Weekly service started {today} at {time.strftime('%c')}")
+
+    weekly_notification(datetime.date.today())
+
+    return 201

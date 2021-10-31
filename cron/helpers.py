@@ -9,6 +9,8 @@ import common
 from api import api
 from secrets import group_chat_id, ccn_bot_token
 
+from common import translate_date
+
 ccn_bot = Bot(ccn_bot_token)
 
 
@@ -18,6 +20,8 @@ def fetch_turn_calendar(date, counter):
     try:
         offset = (date - datetime.date.today()).days
         event = api.get_day_event(offset)
+        if event is None:
+            raise Exception
     except Exception as ex:
         log.info("Exception during Datastore data retrieval")
         log.critical(ex)
@@ -93,9 +97,11 @@ def get_message_string(assigned_group):
         people_after_lunch = common.flatten(api.get_group_by_id(assigned_group[0]))
         people_after_dinner = common.flatten(api.get_group_by_id(assigned_group[1]))
         message = f"Salve! Oggi ci saranno due turni di pulizie.\n\n"\
-                  f"Il turno dopo pranzo è dei gruppi *{common.stringify(assigned_group[0])}*, composti da:" \
+                  f"Il turno dopo pranzo è {'dei gruppi' if len(assigned_group[0]) != 1 else 'del gruppo'}" \
+                  f" *{common.stringify(assigned_group[0])}*:" \
                   f"\n\n{', '.join(people_after_lunch)}." \
-                  f"\n\nIl turno dopo cena è dei gruppi *{common.stringify(assigned_group[1])}*, composti da:" \
+                  f"\n\nIl turno dopo cena è {'dei gruppi' if len(assigned_group[1]) != 1 else 'del gruppo'}" \
+                  f" *{common.stringify(assigned_group[1])}*:" \
                   f"\n\n{', '.join(people_after_dinner)}." \
                   f"\n\nBuona fortuna! 👨🏻‍🍳"
     elif type(assigned_group) is tuple:  # (1, 2, 3, 4)
@@ -125,7 +131,7 @@ def get_message_string_single(assigned_group):
         # The group is a standard one
         message = f"Salve! Oggi il turno di pulizie è del gruppo" \
                   f" *{assigned_group}*, composto da:" \
-                  f"\n\n{',  ,'.join(people)}." \
+                  f"\n\n{', '.join(people)}." \
                   f"\n\nBuona fortuna! 👨🏻‍🍳"
 
     elif int(assigned_group) >= 100:  # 101
@@ -158,6 +164,62 @@ def get_message_string_single(assigned_group):
         raise AttributeError("Either provide a single int group or a number > 100 for a punishment.")
 
     return message
+
+
+def weekly_notification(date):
+    try:
+        message = ["Salve! Questa settimana toccherà ai seguenti gruppi: "]
+        for i in range(0, 7):
+            try:
+                assigned_group = fetch_turn_calendar(date, 3)
+            except TimeoutError as ex:
+                log.error(ex)
+                assigned_group = None
+            log.info(f"Checking day {i} for {assigned_group}")
+            try:
+                if assigned_group is None:
+                    message.append(f"\n\n{translate_date(date)} - Nessuno")
+                elif type(assigned_group) is list:  # [(1, 2, ..), (3, 4, ..)]
+                    people_after_lunch = common.flatten(api.get_group_by_id(assigned_group[0]))
+                    people_after_dinner = common.flatten(api.get_group_by_id(assigned_group[1]))
+
+                    number_after_lunch = assigned_group[0][0] if len(assigned_group[0]) == 1 \
+                        else common.stringify(assigned_group[0])
+                    number_after_dinner = assigned_group[1][0] if len(assigned_group[1]) == 1 \
+                        else common.stringify(assigned_group[1])
+
+                    message.append(f"\n\n{translate_date(date)} - "
+                                   f"*{number_after_lunch}* dopo pranzo: {', '.join(people_after_lunch)}; "
+                                   f"*{number_after_dinner}* dopo cena: {', '.join(people_after_dinner)}")
+                elif type(assigned_group) is tuple:  # (1, 2, ..)
+                    # Just a single turn
+                    if len(assigned_group) == 1:
+                        # (1,)
+                        people = api.get_group_by_id(assigned_group[0])
+                        if 0 < int(assigned_group[0]) <= common.MAX_GROUPS:  # 10
+                            # The group is a standard one
+                            message.append(f"\n\n{translate_date(date)} - *{assigned_group[0]}*: {', '.join(people)}")
+                        elif int(assigned_group[0]) >= 100:
+                            message.append(f"\n\n{translate_date(date)} - *Richiamo*")
+                    else:
+                        people = common.flatten(api.get_group_by_id(assigned_group))
+                        message.append(f"\n\n{translate_date(date)} - *{common.stringify(assigned_group)}*:"
+                                       f" {', '.join(people)}")
+                else:
+                    log.error(f"Error in formatting the data: {assigned_group}")
+            except Exception as ex:
+                log.error("Unable to fetch data from Google Calendar... "
+                          "No notification for today... What a pity!")
+                log.error(ex)
+            date += datetime.timedelta(days=1)
+        sent_message = ccn_bot.send_message(chat_id=group_chat_id,
+                                            text="".join(message),
+                                            parse_mode="Markdown")
+        ccn_bot.pin_chat_message(group_chat_id, sent_message.message_id)
+    except Exception as ex:
+        log.error("Unable to send Telegram notification. No notification for "
+                  "today... What a pity!")
+        log.error(ex)
 
 
 def send_cron_notification(date, assigned_group, counter=0):

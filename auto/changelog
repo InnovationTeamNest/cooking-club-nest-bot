@@ -23,3 +23,4 @@
 6-2 - Fixed behaviour for punishments, upgraded python-telegram-bot to 13.0, added placeholder for unpinAllChatMessages method, general code cleanup
 7 - Revamped version for 2021/22 with multiple turns during the day
 7-0-1 - Increased people from 4 to 5
+7-1 - Fixed grammar, some bugs, and re-added weekly turn function

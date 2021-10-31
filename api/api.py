@@ -18,7 +18,7 @@ def get_group_by_id(id):
             data.append(get_group_by_id(subid))
         return data
 
-    elif type(id) is int:
+    elif type(id) is int and id > 0:
         range_ = f"Gruppi!A{id}:E{id}"
 
         service = get_google_sheets_service()
@@ -90,7 +90,10 @@ def get_day_event(offset):
         calendarId=calendar_id, timeMax=endday, timeMin=now,
         maxResults=1, singleEvents=True, orderBy='startTime').execute()
     events = eventresult.get('items')
-    return events[0]
+    if len(events) <= 0:
+        return None
+    else:
+        return events[0]
 
 
 # Metodo per ottenere i dati di affluenza dal foglio Google

@@ -46,3 +46,13 @@ def update():
     start_time = timer()
     code = services.incoming_update(request)
     return f"Richiesta completata in {timer() - start_time} secondi.", code
+
+
+@app.route('/weekly', methods=['GET'])
+def turn():
+    if 'X-Appengine-Cron' in request.headers:
+        start_time = timer()
+        code = services.weekly()
+        return f"Richiesta completata in {timer() - start_time} secondi.", code
+    else:
+        return "Access restricted to AppEngine-Cron requests.", 403

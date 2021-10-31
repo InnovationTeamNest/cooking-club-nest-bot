@@ -4,7 +4,7 @@ import re
 days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
 
 MIN_GROUPS = 1
-MAX_GROUPS = 35
+MAX_GROUPS = 36
 MAX_ATTEMPTS = 3
 
 LOG_FORMAT = '[%(levelname)s] %(message)s (%(filename)s:%(lineno)d:%(funcName)s)'
@@ -40,3 +40,27 @@ def calendar_to_int_tuple(summary):
         for items in raw_groups:
             target_list.append(tuple((int(i) for i in items.split('-'))))
         return target_list
+
+
+def day_to_string(date, phrase):
+    today = datetime.date.today()
+    tomorrow = today + datetime.timedelta(days=1)
+    if phrase:
+        if date.day == today.day:
+            message = "Oggi è"
+        elif date.day == tomorrow.day:
+            message = "Domani sarà"
+        else:
+            message = "Il " + date.strftime("%d/%m/%Y") + " è"
+    else:
+        if date.day == today.day:
+            message = "oggi"
+        elif date.day == tomorrow.day:
+            message = "domani"
+        else:
+            message = "il " + date.strftime("%d/%m/%Y")
+    return message
+
+
+def translate_date(date):
+    return f"{days[date.weekday()]} {date.strftime('%d').lstrip('0')}/{date.strftime('%m').lstrip('0')}"
