@@ -25,3 +25,4 @@
 7-0-1 - Increased people from 4 to 5
 7-1 - Fixed grammar, some bugs, and re-added weekly turn function
 7-1-1 - Fixed weekly/turn bug of overlapping name
+7-2 - Fixed breaking bug with dates and late alerts

@@ -18,10 +18,10 @@ def fetch_turn_calendar(date, counter):
     log.info(f"Starting turn fetching helper at {date} {counter}")
 
     try:
-        offset = (date - datetime.date.today()).days
+        offset = (date - datetime.datetime.utcnow().date()).days
         event = api.get_day_event(offset)
         if event is None:
-            raise Exception
+            raise Exception("No event found")
     except Exception as ex:
         log.info("Exception during Datastore data retrieval")
         log.critical(ex)

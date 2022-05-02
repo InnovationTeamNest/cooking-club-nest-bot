@@ -83,13 +83,16 @@ def is_day_checked(date):
 def get_day_event(offset):
     calendar_service = get_google_calendar_service()
     now = datetime.datetime.utcnow() + datetime.timedelta(days=offset)
-    endday = now.replace(hour=21, minute=0, second=0)
-    now = now.isoformat() + "+01:00"
-    endday = endday.isoformat() + "+01:00"
+    now = now.replace(hour=3, minute=0, second=0, microsecond=0)
+    endday = now + datetime.timedelta(hours=18)
+    now = now.isoformat() + 'Z'
+    endday = endday.isoformat() + 'Z'
+
     eventresult = calendar_service.events().list(
         calendarId=calendar_id, timeMax=endday, timeMin=now,
         maxResults=1, singleEvents=True, orderBy='startTime').execute()
     events = eventresult.get('items')
+
     if len(events) <= 0:
         return None
     else:

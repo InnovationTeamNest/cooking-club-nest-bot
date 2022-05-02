@@ -20,4 +20,4 @@ if __name__ == "__main__":
     # today = time.strftime(str("%d/%m/%Y"))
     # send_cron_notification(today, assigned_group)
 
-    helpers.weekly_notification(datetime.date(year=2021, month=9, day=27))
+    helpers.weekly_notification(datetime.date(2022,5,2))
